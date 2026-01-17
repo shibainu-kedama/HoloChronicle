@@ -1,0 +1,22 @@
+[gd_scene load_steps=2 format=3 uid="uid://bieur77d2qpxg"]
+
+[ext_resource type="Script" path="res://scripts/MapScene.gd" id="1_u47hg"]
+
+[node name="MapScene" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_u47hg")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="NodeContainer" type="Node2D" parent="."]
+
+[node name="PathDrawer" type="Line2D" parent="."]
+
+[node name="Label_Type" type="Label" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0

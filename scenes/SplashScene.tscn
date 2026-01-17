@@ -1,0 +1,37 @@
+[gd_scene load_steps=3 format=3 uid="uid://w3nwmskiiecx"]
+
+[ext_resource type="Script" path="res://scripts/SplashScene.gd" id="1_7avxx"]
+[ext_resource type="Texture2D" uid="uid://css4gtttxt72j" path="res://images/splash.png" id="2_563dj"]
+
+[node name="SplashScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_7avxx")
+
+[node name="ColorRect2" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_563dj")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="Timer" type="Timer" parent="."]
+one_shot = true
+
+[connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
