@@ -1,4 +1,0 @@
-id,name,effect,power,cost,info,image_path
-zangeki,斬撃,attack,6,1,a,res://images/card_strike.png
-bougyo,防御,block,5,1,i,res://images/card_kiaraGuard.png
-kiai,気合い,energy,1,0,u,res://images/card_fubura.png
