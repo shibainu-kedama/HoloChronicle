@@ -1,0 +1,10 @@
+res://scenes/BattleScene.tscn
+res://scripts/SplashScene.gd
+res://scenes/MapNode.tscn
+res://scenes/MapScene.tscn
+res://scenes/EventScene.tscn
+res://scenes/GameClear.tscn
+res://scenes/CharacterSelectScene.tscn
+res://scenes/TitleScene.tscn
+res://scenes/CardButton.tscn
+res://scenes/CardSlot.tscn
