@@ -41,8 +41,7 @@ func load_node_types_from_csv(path: String) -> void:
 		if type_candidates.is_empty():
 			continue
 
-		# shop を含むノードは shop を優先し、イベント化を防ぐ
-		var chosen_type = "shop" if type_candidates.has("shop") else type_candidates[randi() % type_candidates.size()]
+		var chosen_type = type_candidates[randi() % type_candidates.size()]
 
 		var map_node = node_container.get_node_or_null(node_id)
 		if map_node and map_node.has_method("set_type"):

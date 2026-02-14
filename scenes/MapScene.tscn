@@ -21,11 +21,11 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="ViewportContent" type="Control" parent="ScrollContainer"]
-custom_minimum_size = Vector2(1150, 1000)
+custom_minimum_size = Vector2(1150, 1050)
 layout_mode = 2
 
 [node name="Background" type="TextureRect" parent="ScrollContainer/ViewportContent"]
-custom_minimum_size = Vector2(1500, 1000)
+custom_minimum_size = Vector2(1500, 1050)
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -35,55 +35,103 @@ offset_bottom = 40.0
 [node name="NodeContainer" type="Node2D" parent="ScrollContainer/ViewportContent"]
 
 [node name="1-A" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
-offset_left = 149.0
-offset_top = 766.0
-offset_right = 189.0
-offset_bottom = 826.0
+offset_left = 150.0
+offset_top = 850.0
+offset_right = 210.0
+offset_bottom = 910.0
 
 [node name="1-B" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
-offset_left = 347.0
-offset_top = 761.0
-offset_right = 387.0
-offset_bottom = 821.0
+offset_left = 400.0
+offset_top = 850.0
+offset_right = 460.0
+offset_bottom = 910.0
 
 [node name="1-C" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
-offset_left = 624.0
-offset_top = 759.0
-offset_right = 664.0
-offset_bottom = 819.0
+offset_left = 650.0
+offset_top = 850.0
+offset_right = 710.0
+offset_bottom = 910.0
 
 [node name="2-A" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
-offset_left = 158.0
-offset_top = 523.0
-offset_right = 198.0
-offset_bottom = 583.0
+offset_left = 130.0
+offset_top = 720.0
+offset_right = 190.0
+offset_bottom = 780.0
 
 [node name="2-B" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
-offset_left = 424.0
-offset_top = 540.0
-offset_right = 464.0
-offset_bottom = 600.0
+offset_left = 380.0
+offset_top = 720.0
+offset_right = 440.0
+offset_bottom = 780.0
 
 [node name="2-C" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
-offset_left = 594.0
-offset_top = 544.0
-offset_right = 634.0
-offset_bottom = 604.0
+offset_left = 630.0
+offset_top = 720.0
+offset_right = 690.0
+offset_bottom = 780.0
 
 [node name="3-A" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
-offset_left = 281.0
-offset_top = 391.0
-offset_right = 321.0
-offset_bottom = 451.0
+offset_left = 170.0
+offset_top = 590.0
+offset_right = 230.0
+offset_bottom = 650.0
 
 [node name="3-B" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
-offset_left = 500.0
-offset_top = 379.0
-offset_right = 540.0
-offset_bottom = 439.0
+offset_left = 400.0
+offset_top = 590.0
+offset_right = 460.0
+offset_bottom = 650.0
+
+[node name="3-C" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
+offset_left = 620.0
+offset_top = 590.0
+offset_right = 680.0
+offset_bottom = 650.0
 
 [node name="4-A" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
-offset_left = 389.0
-offset_top = 226.0
-offset_right = 429.0
-offset_bottom = 286.0
+offset_left = 250.0
+offset_top = 460.0
+offset_right = 310.0
+offset_bottom = 520.0
+
+[node name="4-B" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
+offset_left = 530.0
+offset_top = 460.0
+offset_right = 590.0
+offset_bottom = 520.0
+
+[node name="5-A" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
+offset_left = 150.0
+offset_top = 330.0
+offset_right = 210.0
+offset_bottom = 390.0
+
+[node name="5-B" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
+offset_left = 400.0
+offset_top = 330.0
+offset_right = 460.0
+offset_bottom = 390.0
+
+[node name="5-C" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
+offset_left = 650.0
+offset_top = 330.0
+offset_right = 710.0
+offset_bottom = 390.0
+
+[node name="6-A" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
+offset_left = 270.0
+offset_top = 200.0
+offset_right = 330.0
+offset_bottom = 260.0
+
+[node name="6-B" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
+offset_left = 520.0
+offset_top = 200.0
+offset_right = 580.0
+offset_bottom = 260.0
+
+[node name="7-A" parent="ScrollContainer/ViewportContent/NodeContainer" instance=ExtResource("2_jjq3g")]
+offset_left = 370.0
+offset_top = 70.0
+offset_right = 430.0
+offset_bottom = 130.0

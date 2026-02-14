@@ -41,11 +41,13 @@ func unlock_start_node(start_id: String) -> void:
 func unlock_next_nodes(from_id: String) -> void:
 	print("🔓 unlock_next_nodes:", from_id)
 	if node_links.has(from_id):
+		var next_nodes: Array[String] = []
 		for next_id in node_links[from_id]:
 			print(" → 解放候補:", next_id)
-			if not unlocked_nodes.has(next_id):
-				unlocked_nodes.append(next_id)
-				print(" ✅ 解放:", next_id)
+			if not next_nodes.has(next_id):
+				next_nodes.append(next_id)
+		# 次の選択肢は to_id 群のみに限定
+		unlocked_nodes = next_nodes
 	print("🧭 unlocked_nodes:", unlocked_nodes)
 
 

@@ -17,3 +17,10 @@ res://data/cards.image.translation
 res://data/map_nodes.type1.translation
 res://data/map_nodes.type2.translation
 res://data/map_nodes.type3.translation
+res://data/enemies.name.translation
+res://data/enemies.hp.translation
+res://data/enemies.stage.translation
+res://data/enemies.is.translation
+res://data/enemies.image.translation
+res://data/enemies.actions.translation
+res://data/map_paths.to.translation
