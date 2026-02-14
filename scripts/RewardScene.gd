@@ -19,12 +19,13 @@ func _ready():
 		print("カードボタンが3つ未満です。シーン構成を確認してください。")
 		return
 
-	# すでにロード済みのカードからランダムに3枚抽選
-	reward_cards = pick_random_cards(CardLoader.all_cards, 3)
-	show_reward_cards()
+	# すでにロード済みのカードからランダムに最大3枚抽選
+	var offer_count = min(3, CardLoader.all_cards.size(), card_buttons.size())
+	reward_cards = pick_random_cards(CardLoader.all_cards, offer_count)
+	show_reward_cards(offer_count)
 
-func show_reward_cards():
-	for i in range(3):
+func show_reward_cards(count: int):
+	for i in range(count):
 		var btn = card_buttons[i]
 		if btn == null:
 			push_error("card_buttons[%d] が null です。" % i)
@@ -32,9 +33,7 @@ func show_reward_cards():
 
 		var data = reward_cards[i]
 		print("【show_reward_cards】%s / %s / %s / %s / %s / %s" % [data.name, data.effect, str(data.power), str(data.cost), data.info, data.image_path])
-		
-		# カードデータをボタンに渡す
-		btn.setup(data.name, data.effect, data.power, data.cost, data.image_path)
+
 		# UI更新
 		btn.update_card_display(data)
 		# カードが押された時の処理を接続

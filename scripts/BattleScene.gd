@@ -13,19 +13,21 @@ extends Control
 @onready var enemy_image = $EnemyImage
 
 const MAX_ENERGY = 3
-const MAX_HP = 100
 
-var player_hp = MAX_HP
+var player_hp: int
+var player_max_hp: int
 var player_block = 0
 var player_energy = MAX_ENERGY
 var energy_penalty_next_turn = false
+var enemy_buff_active = false  # 敵バフ: 次の攻撃1.5倍
 
 var deck: Array[CardData] = []
 var discard_pile: Array[CardData] = []
 var card_scene = preload("res://scenes/CardButton.tscn")
 var popup_scene = preload("res://scenes/PopupDamage.tscn")
 
-var enemy_hp = 5
+var enemy_data: EnemyData
+var enemy_hp: int
 var next_enemy_action = {}
 
 # 追加: 終了多重防止
@@ -37,17 +39,61 @@ func _ready():
 	deck = Global.player_deck.duplicate()
 	# デッキをシャッフルする
 	deck.shuffle()
-	# デッキから3枚引くする
+
+	# プレイヤーHP設定（キャラクターデータから）
+	if Global.selected_character:
+		player_max_hp = Global.selected_character.hp
+	else:
+		player_max_hp = 100
+	player_hp = player_max_hp
+
+	# 敵データ読み込み
+	_setup_enemy()
+
+	# デッキから3枚引く
 	draw_cards(3)
-	
-	player_hp_bar.max_value = MAX_HP
+
+	player_hp_bar.max_value = player_max_hp
 	player_hp_bar.value = player_hp
 
-	enemy_ui.set_hp(enemy_hp)
 	decide_enemy_action()
-
 	update_ui()
 	setup_buttons()
+
+func _setup_enemy():
+	# Global.current_enemy_id が設定されていればそれを使う
+	if Global.current_enemy_id != "":
+		enemy_data = EnemyLoader.get_enemy_by_id(Global.current_enemy_id)
+
+	# IDが未設定 or 見つからない場合はステージに応じてランダム選択
+	if enemy_data == null:
+		var stage = _get_current_stage_number()
+		var is_boss = Global.is_boss_stage()
+		enemy_data = EnemyLoader.get_random_enemy_for_stage(stage, is_boss)
+
+	if enemy_data == null:
+		push_error("敵データが見つかりません。デフォルト敵を使用します。")
+		enemy_data = EnemyData.new()
+		enemy_data.id = "default"
+		enemy_data.name = "スライム"
+		enemy_data.hp = 20
+		enemy_data.image_path = "res://images/enemy_fubura.png"
+		enemy_data.actions = [{"type": "attack", "power": 6, "weight": 1}]
+
+	enemy_hp = enemy_data.hp
+	enemy_ui.initialize_hp(enemy_data.hp)
+	enemy_ui.set_enemy_name(enemy_data.name)
+
+	# 敵画像セット
+	if ResourceLoader.exists(enemy_data.image_path):
+		enemy_image.texture = load(enemy_data.image_path)
+
+func _get_current_stage_number() -> int:
+	# ノードIDから階層番号を取得（例: "2-A" → 2）
+	var node_id = Global.current_node_id
+	if node_id.length() > 0 and node_id[0].is_valid_int():
+		return int(node_id[0])
+	return 1
 
 func setup_buttons():
 	discard_button.pressed.connect(_on_DiscardZone_pressed)
@@ -69,10 +115,8 @@ func draw_cards(count):
 		send_deck_to_zone()
 		var card = card_scene.instantiate()
 
-		card.setup(card_data.name, card_data.effect, card_data.power, card_data.cost, card_data.image_path)
-		# UI更新
 		card.update_card_display(card_data)
-		
+
 		card.use_card.connect(_on_card_used)
 		card_container.add_child(card)
 
@@ -83,19 +127,26 @@ func reshuffle_deck():
 	deck.shuffle()
 
 func decide_enemy_action():
-	var r = randi() % 4
-	match r:
-		0:
-			next_enemy_action = {"type": "attack", "power": 8}
-		1:
-			next_enemy_action = {"type": "multi_attack", "power": 4, "times": 2}
-		2:
-			next_enemy_action = {"type": "buff"}
-		_:
-			next_enemy_action = {"type": "debuff"}
+	if enemy_data == null or enemy_data.actions.is_empty():
+		next_enemy_action = {"type": "attack", "power": 6}
+		enemy_ui.set_intent(next_enemy_action)
+		return
+
+	# 重み付きランダム選択
+	var total_weight = 0
+	for action in enemy_data.actions:
+		total_weight += action.get("weight", 1)
+
+	var roll = randi() % total_weight
+	var cumulative = 0
+	for action in enemy_data.actions:
+		cumulative += action.get("weight", 1)
+		if roll < cumulative:
+			next_enemy_action = action.duplicate()
+			break
 
 	enemy_ui.set_intent(next_enemy_action)
-	
+
 func Discard_update(card):
 	discard_pile.append(card.card_data)
 	discard_label.text = str(discard_pile.size())
@@ -161,23 +212,30 @@ func play_enemy_turn():
 	match next_enemy_action.type:
 		"attack":
 			var damage = next_enemy_action.power
+			if enemy_buff_active:
+				damage = int(damage * 1.5)
+				enemy_buff_active = false
 			apply_damage(damage)
-			label.text = "敵の攻撃！ %d ダメージ！" % damage
+			label.text = "%sの攻撃！ %d ダメージ！" % [enemy_data.name, damage]
 
 		"multi_attack":
-			var hits = next_enemy_action.times
+			var hits = next_enemy_action.get("times", 2)
 			var dmg = next_enemy_action.power
+			if enemy_buff_active:
+				dmg = int(dmg * 1.5)
+				enemy_buff_active = false
 			for i in range(hits):
 				await get_tree().create_timer(0.3).timeout
 				apply_damage(dmg)
-			label.text = "敵の連続攻撃！"
+			label.text = "%sの連続攻撃！" % enemy_data.name
 
 		"buff":
-			label.text = "敵は力を溜めている（バフ）"
+			enemy_buff_active = true
+			label.text = "%sは力を溜めている…次の攻撃が強化！" % enemy_data.name
 
 		"debuff":
 			energy_penalty_next_turn = true
-			label.text = "敵の邪悪な気配… 次ターンのエナジーが減少！"
+			label.text = "%sの邪悪な気配… 次ターンのエナジーが減少！" % enemy_data.name
 
 	update_ui()
 
@@ -210,7 +268,7 @@ func send_deck_to_zone():
 	if deck_zone and deck_zone.has_method("set_cards"):
 		deck_zone.set_cards(deck)
 	else:
-		push_error("❌ DeckZoneが見つからない、または set_cards が定義されていません")
+		push_error("DeckZoneが見つからない、または set_cards が定義されていません")
 
 func show_popup_damage(amount: int):
 	var popup = popup_scene.instantiate()
@@ -225,11 +283,11 @@ func check_battle_result():
 		on_defeat()
 
 func on_victory():
-	
+
 	if battle_over:
 		return
 	battle_over = true
-	
+
 	# データを一時的に保存したい場合はここでGlobalなどにセット
 	if Global.is_boss_stage():
 		print("勝利！ボス戦なのでゲームクリアへ")
@@ -237,14 +295,14 @@ func on_victory():
 	else:
 		print("勝利！報酬画面へ")
 		get_tree().change_scene_to_file("res://scenes/RewardScene.tscn")
-	
+
 
 func on_defeat():
-	
+
 	if battle_over:
 		return
 	battle_over = true
-	
+
 	print("敗北！タイトル画面へ")
 	# データを一時的に保存したい場合はここでGlobalなどにセット
 	get_tree().change_scene_to_file("res://scenes/TitleScene.tscn")

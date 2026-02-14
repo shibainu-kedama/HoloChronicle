@@ -22,6 +22,12 @@ offset_right = 40.0
 offset_bottom = 40.0
 alignment = 1
 
+[node name="EnemyNameLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "敵"
+horizontal_alignment = 1
+
 [node name="EnemyHPBar" type="ProgressBar" parent="VBoxContainer"]
 custom_minimum_size = Vector2(300, 30)
 layout_mode = 2

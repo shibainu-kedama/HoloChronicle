@@ -1,6 +1,5 @@
 extends Panel
 
-@onready var card_list = $CardList
 @onready var deck_count_label: Label = $DeckImage/DeckCountLabel
 @export var card_scene: PackedScene
 @export var deck_data: Array = []  # 外部からも編集可能に
@@ -13,7 +12,7 @@ func _ready():
 
 func update_deck_count():
 	print("update_deck_count:", str(deck_data.size()))
-	deck_count_label.text = str(deck_data.size()-1)
+	deck_count_label.text = str(deck_data.size())
 
 # デッキデータをコピーして保持
 func set_cards(new_deck_data: Array) -> void:

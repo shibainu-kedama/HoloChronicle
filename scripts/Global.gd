@@ -22,6 +22,9 @@ var current_node_id: String = ""
 # すでに通過したノードの記録
 var passed_nodes: Array[String] = []
 
+# 現在のバトルで戦う敵ID
+var current_enemy_id: String = ""
+
 
 func is_node_unlocked(node_id: String) -> bool:
 	return unlocked_nodes.has(node_id)

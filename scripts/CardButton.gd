@@ -2,12 +2,6 @@ extends TextureButton
 
 signal use_card(card)
 
-@export var card_name_label: Label
-@export var card_effect_label: Label
-@export var card_power_label: Label
-@export var card_cost_label: Label
-@export var card_image: TextureRect
-
 # カードデータ（外部から渡される）
 var card_name: String
 var effect_type: String
@@ -26,42 +20,20 @@ func _ready():
 func _on_pressed():
 	emit_signal("use_card", self)
 
-func setup(name: String, effect: String, power_value: int, cost_value: int, image: String) -> void:
-	# 値のセット
-	card_name = name
-	effect_type = effect
-	power = power_value
-	cost = cost_value
-	image_path = image
-
 func update_card_display(data: CardData) -> void:
 	card_data = data
-	
+	card_name = data.name
+	effect_type = data.effect
+	power = data.power
+	cost = data.cost
+	image_path = data.image_path
+
 	$VBoxContainer/Label_Name.text = card_data.name
 	$VBoxContainer/Label_Effect.text = card_data.effect
 	$VBoxContainer/HBox_Power/Label_Power.text = str(card_data.power)
 	$VBoxContainer/HBox_Cost/Label_Cost.text = str(card_data.cost)
 	$VBoxContainer/Label_Info.text = card_data.info
 	$CardTexture.texture = load(card_data.image_path)
-	
-	if card_name_label:
-		card_name_label.text = card_data.name
-	
-	if card_effect_label:
-		card_effect_label.text = card_data.effect
-	
-	if card_power_label:
-		card_power_label.text = str(card_data.power)
-	
-	if card_cost_label:
-		card_cost_label.text = str(card_data.cost)
-	
-	if card_image and card_data.image != "":
-		var tex = load(card_data.image)
-		if tex is Texture2D:
-			card_image.texture = tex
-		else:
-			push_error("❌ 指定されたパスが Texture2D ではありません: " + card_data.image)
 	
 # ================= Hover/Pop FX (for BaseButton/TextureButton) =================
 @export var hoverfx_scale: float = 1.50            # ホバー時の拡大倍率

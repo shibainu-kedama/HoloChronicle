@@ -8,13 +8,24 @@ extends Control
 
 var events = []
 var current_event: EventData
-var player_stats = {"hp": 40, "gold": 50, "atk": 0} # 初期ステータス
+var player_stats: Dictionary = {}
 
 const ConditionEvaluator = preload("res://scripts/ConditionEvaluator.gd")
 const EventLoader = preload("res://scripts/EventLoader.gd")
 
 func _ready():
+	# Globalのキャラデータからステータスを初期化
+	var ch = Global.selected_character
+	if ch:
+		player_stats = {"hp": ch.hp, "gold": ch.gold, "atk": 0}
+	else:
+		player_stats = {"hp": 100, "gold": 50, "atk": 0}
+
 	events = EventLoader.load_events("res://data/event_data.csv")
+	if events.is_empty():
+		push_error("イベントデータが空です")
+		return_to_map()
+		return
 	show_event(events[0])
 
 func show_event(ev: EventData):
@@ -60,8 +71,12 @@ func apply_result_and_continue(choice: Dictionary):
 		next_id = int(choice.next_event_id)
 
 	if next_id != null:
-		var next_event = events.filter(func(e): return e.id == next_id)[0]
-		show_event(next_event)
+		var filtered = events.filter(func(e): return e.id == next_id)
+		if filtered.is_empty():
+			push_error("イベントID %d が見つかりません" % next_id)
+			return_to_map()
+			return
+		show_event(filtered[0])
 
 func return_to_map():
 	print("マップに戻ります")

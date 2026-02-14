@@ -2,6 +2,11 @@ extends Control
 
 @onready var enemy_hp_bar = $VBoxContainer/EnemyHPBar
 @onready var intent_label = $VBoxContainer/EnemyIntentLabel
+@onready var name_label = $VBoxContainer/EnemyNameLabel
+
+# 敵名を表示
+func set_enemy_name(enemy_name: String) -> void:
+	name_label.text = enemy_name
 
 # 敵HPバーの最大値・現在値をセット
 func initialize_hp(max_hp: int) -> void:

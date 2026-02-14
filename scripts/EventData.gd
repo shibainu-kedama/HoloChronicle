@@ -12,7 +12,11 @@ static func parse_result(text: String) -> Dictionary:
 	for part in text.split(";"):
 		var kv = part.strip_edges().split(":")
 		if kv.size() == 2:
-			result[kv[0]] = int(kv[1])
+			var val_str = kv[1].strip_edges()
+			# "+10" → "10" にして正しくint変換（符号付き対応）
+			if val_str.begins_with("+"):
+				val_str = val_str.substr(1)
+			result[kv[0]] = int(val_str)
 	return result
 
 static func from_csv_row(row: PackedStringArray) -> EventData:

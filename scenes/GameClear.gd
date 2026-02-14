@@ -41,12 +41,10 @@ func _reset_run_state() -> void:
 
 	# デッキ/キャラ選択
 	Global.player_deck.clear()
-	Global.selected_character = {}
+	Global.selected_character = null
 
-	# ステージ種別を使っている場合（あれば安全に初期化）
-	if "StageType" in Global and "current_stage_type" in Global:
-		Global.current_stage_type = Global.StageType.BATTLE
+	# ステージ種別
+	Global.current_stage_type = Global.StageType.BATTLE
 
-	# ラン統計などを使っている場合（存在チェックで安全に）
-	if "run_stats" in Global:
-		Global.run_stats = {}
+	# 敵ID
+	Global.current_enemy_id = ""

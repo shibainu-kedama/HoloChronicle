@@ -62,7 +62,19 @@ func _on_pressed():
 		
 	# ここで現在ステージ種別をセット
 	Global.set_stage_type_from_string(node_type)
-	
+	Global.current_node_id = name
+
+	# battle/bossの場合、階層に応じた敵をセット
+	match node_type:
+		"battle", "boss":
+			var stage = _get_stage_number()
+			var is_boss = node_type == "boss"
+			var enemy = EnemyLoader.get_random_enemy_for_stage(stage, is_boss)
+			if enemy:
+				Global.current_enemy_id = enemy.id
+			else:
+				Global.current_enemy_id = ""
+
 	# MapScene にインタラクト更新を依頼（親 or 上位シーンから探す）
 	match node_type:
 		"battle":
@@ -75,6 +87,13 @@ func _on_pressed():
 			get_tree().change_scene_to_file("res://scenes/BattleScene.tscn")
 		_:
 			print("未定義のタイプ: ", node_type)
+
+func _get_stage_number() -> int:
+	# ノード名から階層番号を取得（例: "2-A" → 2）
+	var node_name = str(name)
+	if node_name.length() > 0 and node_name[0].is_valid_int():
+		return int(node_name[0])
+	return 1
 
 func set_passed_visual(passed: bool) -> void:
 	if passed:
