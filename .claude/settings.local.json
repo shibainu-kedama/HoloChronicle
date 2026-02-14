@@ -13,7 +13,8 @@
       "Bash(git merge:*)",
       "Bash(git branch:*)",
       "Bash(git push:*)",
-      "Bash(gh auth status:*)"
+      "Bash(gh auth status:*)",
+      "Bash(git remote set-url:*)"
     ]
   }
 }
