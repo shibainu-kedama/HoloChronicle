@@ -21,27 +21,33 @@ func load_node_types_from_csv(path: String) -> void:
 		push_error("CSVファイル読み込み失敗: %s" % path)
 		return
 
-	file.get_line() # ヘッダーを読み飛ばす
+	file.get_csv_line() # ヘッダーを読み飛ばす
 
 	while not file.eof_reached():
-		var line = file.get_line().strip_edges()
-		if line == "":
-			continue
-
-		var cols = line.split(",")
+		var cols: PackedStringArray = file.get_csv_line()
 		if cols.size() < 2:
 			continue
 
-		var node_id = cols[0]
+		var node_id = String(cols[0]).strip_edges()
+		if node_id == "":
+			continue
+
+		var chosen_type := ""
+		if Global.node_types.has(node_id):
+			chosen_type = String(Global.node_types[node_id])
+
 		var type_candidates: Array[String] = []
 		for raw_type in cols.slice(1, cols.size()):
 			var t = String(raw_type).strip_edges().to_lower()
 			if t != "":
 				type_candidates.append(t)
-		if type_candidates.is_empty():
-			continue
 
-		var chosen_type = type_candidates[randi() % type_candidates.size()]
+		if chosen_type == "":
+			if type_candidates.is_empty():
+				continue
+			# shop 候補を含むノードは shop を優先
+			chosen_type = "shop" if type_candidates.has("shop") else type_candidates[randi() % type_candidates.size()]
+			Global.node_types[node_id] = chosen_type
 
 		var map_node = node_container.get_node_or_null(node_id)
 		if map_node and map_node.has_method("set_type"):

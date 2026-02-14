@@ -37,7 +37,60 @@ custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 text = "休む（HP回復）"
 
+[node name="Btn_Remove" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "カード削除（デッキから1枚除去）"
+
 [node name="Btn_Skip" type="Button" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 text = "立ち去る"
+
+[node name="CardRemovePopup" type="Panel" parent="."]
+visible = false
+custom_minimum_size = Vector2(650, 450)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -325.0
+offset_top = -225.0
+offset_right = 325.0
+offset_bottom = 225.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="CardRemovePopup"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label_RemoveTitle" type="Label" parent="CardRemovePopup/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "削除するカードを選んでください"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="CardRemovePopup/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CardList" type="VBoxContainer" parent="CardRemovePopup/VBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Btn_CancelRemove" type="Button" parent="CardRemovePopup/VBox"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "キャンセル"

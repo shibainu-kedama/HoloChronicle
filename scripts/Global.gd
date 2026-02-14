@@ -19,6 +19,7 @@ var selected_character: CharacterData
 # マップ関連
 var unlocked_nodes: Array[String] = []
 var node_links: Dictionary = {}      # ここは { String: Array[String] } のような構造想定
+var node_types: Dictionary = {}      # { node_id: "battle" | "rest" | ... } をラン中固定
 
 # 現在のマップノードID（通過中）
 var current_node_id: String = ""
@@ -76,6 +77,7 @@ func reset_run_state() -> void:
 	passed_nodes.clear()
 	unlocked_nodes.clear()
 	node_links.clear()
+	node_types.clear()
 	current_node_id = ""
 	current_enemy_id = ""
 
