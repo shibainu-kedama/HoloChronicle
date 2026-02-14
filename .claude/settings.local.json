@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for f in scripts/CardData.gd scripts/CharacterData.gd scripts/CardLoader.gd scripts/DeckLoader.gd)",
+      "Bash(do echo \"=== $f ===\")",
+      "Bash(done)",
+      "Bash(for f in scenes/TitleScene.tscn scenes/CharacterSelectScene.tscn scenes/MapScene.tscn scenes/SplashScene.tscn)",
+      "Bash(for f in scripts/EventLoader.gd scripts/EventScene.gd scripts/MapNode.gd)",
+      "Bash(git checkout:*)",
+      "Bash(git commit:*)",
+      "Bash(ls:*)",
+      "Bash(git add:*)",
+      "Bash(git merge:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(gh auth status:*)"
+    ]
+  }
+}
