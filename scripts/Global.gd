@@ -4,6 +4,10 @@ extends Node
 enum StageType { BATTLE, REST, EVENT, BOSS }
 var current_stage_type: int = StageType.BATTLE
 
+# プレイヤーHP（-1 = 未初期化）
+var player_hp: int = -1
+var player_max_hp: int = 100
+
 # プレイヤーのデッキ
 var player_deck: Array[CardData] = []
 

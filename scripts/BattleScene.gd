@@ -11,8 +11,13 @@ extends Control
 @onready var deck_zone := $DeckZone
 @onready var enemy_ui = $EnemyUI
 @onready var enemy_image = $EnemyImage
+@onready var end_turn_button = $EndTurnButton
 
 const MAX_ENERGY = 3
+const MAX_HAND_SIZE = 10
+
+enum TurnState { PLAYER_TURN, ENEMY_TURN, BATTLE_END }
+var turn_state: TurnState = TurnState.PLAYER_TURN
 
 var player_hp: int
 var player_max_hp: int
@@ -40,12 +45,12 @@ func _ready():
 	# デッキをシャッフルする
 	deck.shuffle()
 
-	# プレイヤーHP設定（キャラクターデータから）
-	if Global.selected_character:
-		player_max_hp = Global.selected_character.hp
+	# プレイヤーHP設定（Globalから復元）
+	player_max_hp = Global.player_max_hp
+	if Global.player_hp > 0:
+		player_hp = Global.player_hp
 	else:
-		player_max_hp = 100
-	player_hp = player_max_hp
+		player_hp = player_max_hp
 
 	# 敵データ読み込み
 	_setup_enemy()
@@ -102,10 +107,17 @@ func setup_buttons():
 func update_ui():
 	player_block_label.text = "ブロック: %d" % player_block
 	energy_label.text = "エナジー: %d" % player_energy
+	_update_end_turn_button()
+
+func _update_end_turn_button():
+	if end_turn_button:
+		end_turn_button.disabled = turn_state != TurnState.PLAYER_TURN
 
 func draw_cards(count):
 	print("draw_cards", str(deck.size()))
 	for i in range(count):
+		if card_container.get_child_count() >= MAX_HAND_SIZE:
+			return
 		if deck.is_empty():
 			reshuffle_deck()
 		if deck.is_empty():
@@ -152,6 +164,9 @@ func Discard_update(card):
 	discard_label.text = str(discard_pile.size())
 
 func _on_card_used(card):
+	if not is_player_turn():
+		return
+
 	if card.cost > player_energy:
 		label.text = "エナジーが足りない！"
 		return
@@ -187,18 +202,22 @@ func _on_EndTurnButton_pressed():
 
 	end_player_turn()
 	await play_enemy_turn()
-	start_player_turn()
+	if turn_state != TurnState.BATTLE_END:
+		start_player_turn()
 
 func is_player_turn() -> bool:
-	return true  # 状態管理を導入する場合ここで判定
+	return turn_state == TurnState.PLAYER_TURN
 
 func end_player_turn():
+	turn_state = TurnState.ENEMY_TURN
 	label.text = "ターン終了… 敵の行動中..."
+	_update_end_turn_button()
 	for card in card_container.get_children():
 		discard_pile.append(card.card_data)
 		card.queue_free()
 
 func start_player_turn():
+	turn_state = TurnState.PLAYER_TURN
 	player_block = 0
 	player_energy = MAX_ENERGY - 1 if energy_penalty_next_turn else MAX_ENERGY
 	energy_penalty_next_turn = false
@@ -283,12 +302,15 @@ func check_battle_result():
 		on_defeat()
 
 func on_victory():
-
 	if battle_over:
 		return
 	battle_over = true
+	turn_state = TurnState.BATTLE_END
+	_update_end_turn_button()
 
-	# データを一時的に保存したい場合はここでGlobalなどにセット
+	# HPをGlobalに書き戻し
+	Global.player_hp = player_hp
+
 	if Global.is_boss_stage():
 		print("勝利！ボス戦なのでゲームクリアへ")
 		get_tree().change_scene_to_file("res://scenes/GameClear.tscn")
@@ -298,11 +320,14 @@ func on_victory():
 
 
 func on_defeat():
-
 	if battle_over:
 		return
 	battle_over = true
+	turn_state = TurnState.BATTLE_END
+	_update_end_turn_button()
+
+	# HPをGlobalに書き戻し
+	Global.player_hp = player_hp
 
 	print("敗北！タイトル画面へ")
-	# データを一時的に保存したい場合はここでGlobalなどにセット
 	get_tree().change_scene_to_file("res://scenes/TitleScene.tscn")

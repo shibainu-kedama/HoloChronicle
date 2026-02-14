@@ -48,3 +48,7 @@ func _reset_run_state() -> void:
 
 	# 敵ID
 	Global.current_enemy_id = ""
+
+	# プレイヤーHP
+	Global.player_hp = -1
+	Global.player_max_hp = 100
