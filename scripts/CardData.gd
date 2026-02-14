@@ -9,6 +9,22 @@ var id: String = ""
 @export var cost: int
 @export var info: String
 @export var image_path: String
+var upgraded: bool = false
+
+func upgrade() -> void:
+	if upgraded:
+		return
+	upgraded = true
+	match effect:
+		"attack", "self_attack", "multi_attack":
+			power += 3
+		"block":
+			power += 3
+		"energy", "draw", "energy_burst":
+			power += 1
+		"heal":
+			power += 3
+	name = name + "+"
 
 static func from_dict(data: Dictionary) -> CardData:
 	var card = CardData.new()
