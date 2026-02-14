@@ -195,12 +195,35 @@ func _on_card_used(card):
 			var dealt = card.power + Global.player_atk_bonus
 			label.text = "攻撃カード使用: %d ダメージ！" % dealt
 			apply_damage_to_enemy(dealt)
+		"self_attack":
+			var dealt = card.power + Global.player_atk_bonus
+			apply_damage_to_enemy(dealt)
+			apply_damage(5)
+			label.text = "捨て身！ %dダメージ！ 反動で5ダメージ！" % dealt
+		"multi_attack":
+			var hit_dmg = card.power + Global.player_atk_bonus
+			for i in range(3):
+				apply_damage_to_enemy(hit_dmg)
+				if battle_over:
+					break
+			label.text = "連撃！ %d×3 ダメージ！" % hit_dmg
 		"block":
 			player_block += card.power
 			label.text = "防御カード使用: ブロック +%d" % card.power
 		"energy":
 			player_energy = min(player_energy + card.power, MAX_ENERGY)
 			label.text = "エナジー回復: +%d" % card.power
+		"energy_burst":
+			player_energy += card.power
+			energy_penalty_next_turn = true
+			label.text = "覚醒！ エナジー +%d（次ターン-1）" % card.power
+		"draw":
+			draw_cards(card.power)
+			label.text = "ドロー！ %d枚引いた！" % card.power
+		"heal":
+			player_hp = min(player_hp + card.power, player_max_hp)
+			player_hp_bar.value = player_hp
+			label.text = "回復！ HP +%d" % card.power
 
 	update_ui()
 	card.queue_free()

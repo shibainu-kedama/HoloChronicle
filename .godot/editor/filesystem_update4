@@ -8,3 +8,9 @@ res://scenes/CharacterSelectScene.tscn
 res://scenes/TitleScene.tscn
 res://scenes/CardButton.tscn
 res://scenes/CardSlot.tscn
+res://data/cards.name.translation
+res://data/cards.effect.translation
+res://data/cards.power.translation
+res://data/cards.cost.translation
+res://data/cards.info.translation
+res://data/cards.image.translation

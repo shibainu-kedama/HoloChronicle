@@ -19,6 +19,11 @@ func _ready():
 		print("カードボタンが3つ未満です。シーン構成を確認してください。")
 		return
 
+	# スキップボタン接続
+	var skip_btn = $VBoxContainer/Btn_Skip
+	if skip_btn:
+		skip_btn.pressed.connect(_on_skip_pressed)
+
 	# すでにロード済みのカードからランダムに最大3枚抽選
 	var offer_count = min(3, CardLoader.all_cards.size(), card_buttons.size())
 	reward_cards = pick_random_cards(CardLoader.all_cards, offer_count)
@@ -52,6 +57,9 @@ func _on_card_selected(btn: TextureButton):
 	Global.player_deck.append(selected_card)
 
 	# 次のシーンへ遷移（マップ画面など）
+	get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
+
+func _on_skip_pressed():
 	get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
 
 # ユーティリティ：ランダムにN枚選ぶ

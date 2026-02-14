@@ -49,3 +49,8 @@ layout_mode = 2
 
 [node name="CardButton33" parent="VBoxContainer/HBoxContainer" instance=ExtResource("2_0pj5c")]
 layout_mode = 2
+
+[node name="Btn_Skip" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "スキップ（カードを取らない）"
