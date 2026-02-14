@@ -4,6 +4,8 @@ extends Control
 @onready var quit_button: Button = $QuitButton
 
 func _ready() -> void:
+	Global.reset_run_state()
+
 	# フェードイン
 	FadeLayer.fade_in()
 	

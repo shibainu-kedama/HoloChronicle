@@ -4,11 +4,9 @@ extends Control
 @onready var path_drawer = $ScrollContainer/ViewportContent/PathDrawer
 @onready var background = $ScrollContainer/ViewportContent/Background
 
-var unlocked_nodes: Array[String] = []  # 選択可能ノード
-var node_links: Dictionary = {}  # 例: { "A": ["B", "C"] }
-
 func _ready():
 	load_node_types_from_csv("res://data/map_nodes.csv")
+	Global.node_links.clear()
 	load_paths_from_csv("res://data/map_paths.csv")
 	
 	# ← 最初の選択可能ノード
@@ -92,21 +90,6 @@ func draw_line_between_nodes(node_a: Control, node_b: Control) -> void:
 	line.add_point(end_pos)
 
 	path_drawer.add_child(line)
-
-# 選択可能ノードのロジック
-func unlock_start_node(start_id: String) -> void:
-	unlocked_nodes = [start_id]
-	update_node_interactability()
-
-func is_node_unlocked(node_id: String) -> bool:
-	return unlocked_nodes.has(node_id)
-
-func unlock_next_nodes(from_id: String) -> void:
-	if node_links.has(from_id):
-		for next_id in node_links[from_id]:
-			if not unlocked_nodes.has(next_id):
-				unlocked_nodes.append(next_id)
-	update_node_interactability()
 
 func update_node_interactability():
 	print("UI更新中:", Global.unlocked_nodes)

@@ -1,0 +1,200 @@
+From: PROJECT_ANALYSIS.md safe fixes
+Subject: [PATCH] Safe fixes from project analysis
+
+- MapScene: remove unused local state and duplicate methods
+- BattleScene: remove dead _on_card_selected, fix draw_cards order, fix stage number parse
+- MapNode: fix stage number parse for 2+ digits
+- DeckLoader: close file after read
+- CardLoader: push_error when card not found
+- Global: remove unused last_battle_reward_candidates
+- GameClear: remove clear of last_battle_reward_candidates
+- EventLoader: add return type Array[EventData]
+- DeckPopup: add parameter type Array[CardData]
+
+---
+ scripts/BattleScene.gd    | 32 ++++++++++++++++-----------------
+ scripts/CardLoader.gd     |  3 +++
+ scripts/DeckLoader.gd     |  5 ++++-
+ scripts/DeckPopup.gd      |  2 +-
+ scripts/EventLoader.gd    |  2 +-
+ scripts/Global.gd         |  3 ---
+ scripts/MapNode.gd        |  8 +++++---
+ scripts/MapScene.gd       | 22 ----------------------
+ scenes/GameClear.gd       |  1 -
+ 9 files changed, 31 insertions(+), 38 deletions(-)
+
+diff --git a/scripts/BattleScene.gd b/scripts/BattleScene.gd
+--- a/scripts/BattleScene.gd
++++ b/scripts/BattleScene.gd
+@@ -92,9 +92,16 @@ func _setup_enemy():
+ 
+ func _get_current_stage_number() -> int:
+ 	# ノードIDから階層番号を取得（例: "2-A" → 2）
+ 	var node_id = Global.current_node_id
+-	if node_id.length() > 0 and node_id[0].is_valid_int():
+-		return int(node_id[0])
++	var num_str := ""
++	for i in range(node_id.length()):
++		if node_id[i].is_valid_int():
++			num_str += node_id[i]
++		else:
++			break
++	if num_str != "":
++		return int(num_str)
+ 	return 1
+ 
+ func setup_buttons():
+@@ -118,8 +125,8 @@ func draw_cards(count):
+ 		if deck.is_empty():
+ 			reshuffle_deck()
+ 		if deck.is_empty():
+ 			return
+ 		var card_data = deck.pop_front()
++		send_deck_to_zone()
+ 		deck_zone.update_deck_count()
+-		send_deck_to_zone()
+ 		var card = card_scene.instantiate()
+ 
+ 		card.update_card_display(card_data)
+@@ -268,11 +275,6 @@ func _on_DeckZone_pressed():
+ 	deck_zone.show_deck_popup()
+ 
+-func _on_card_selected(card):
+-	if "card_data" in card:
+-		discard_pile.append(card.card_data)
+-	else:
+-		push_error("選択された card に 'card_data' が存在しません。スクリプトがアタッチされているか確認してください。")
+-
+ func send_deck_to_zone():
+ 	if deck_zone and deck_zone.has_method("set_cards"):
+ 		deck_zone.set_cards(deck)
+diff --git a/scripts/CardLoader.gd b/scripts/CardLoader.gd
+--- a/scripts/CardLoader.gd
++++ b/scripts/CardLoader.gd
+@@ -43,5 +43,8 @@ func load_cards_from_csv(path: String):
+ # ID検索用
+ func get_card_by_id(id: String) -> CardData:
+ 	for card in all_cards:
+ 		if card.id == id:
+ 			return card
++	push_error("カードID '%s' が見つかりません" % id)
+ 	return null
+diff --git a/scripts/DeckLoader.gd b/scripts/DeckLoader.gd
+--- a/scripts/DeckLoader.gd
++++ b/scripts/DeckLoader.gd
+@@ -6,6 +6,8 @@ func load_starting_deck(character_id: String) -> Array[CardData]:
+ 	if not file:
+ 		push_error("starting_decks.csv が開けませんでした")
+ 		return deck
+ 	
+ 	file.get_line()  # ヘッダーをスキップ
+ 	while not file.eof_reached():
+@@ -20,4 +22,5 @@ func load_starting_deck(character_id: String) -> Array[CardData]:
+ 			var card = CardLoader.get_card_by_id(card_id)
+ 			if card:
+ 				deck.append(card)
++	file.close()
+ 	return deck
+diff --git a/scripts/DeckPopup.gd b/scripts/DeckPopup.gd
+--- a/scripts/DeckPopup.gd
++++ b/scripts/DeckPopup.gd
+@@ -13,7 +13,7 @@ func _on_close_button_pressed():
+ 	hide()
+ 
+-func show_cards(deck_data: Array):
++func show_cards(deck_data: Array[CardData]) -> void:
+ 	print("🃏 show_cards() 呼び出し - デッキ枚数: ", deck_data.size())
+ 
+ 	# 一度既存のカード表示を削除
+diff --git a/scripts/EventLoader.gd b/scripts/EventLoader.gd
+--- a/scripts/EventLoader.gd
++++ b/scripts/EventLoader.gd
+@@ -4,7 +4,7 @@ extends Node
+ 
+ const EventData = preload("res://scripts/EventData.gd")
+ 
+-static func load_events(path: String) -> Array:
++static func load_events(path: String) -> Array[EventData]:
+ 	var file = FileAccess.open(path, FileAccess.READ)
+ 	if not file:
+ 		push_error("CSV読み込み失敗: " + path)
+diff --git a/scripts/Global.gd b/scripts/Global.gd
+--- a/scripts/Global.gd
++++ b/scripts/Global.gd
+@@ -11,9 +11,6 @@ var player_max_hp: int = 100
+ # プレイヤーのデッキ
+ var player_deck: Array[CardData] = []
+ 
+-# 直前の戦闘報酬候補
+-var last_battle_reward_candidates: Array[CardData] = []
+-
+ # 選択中のキャラ（CharacterDataに統一）
+ var selected_character: CharacterData
+ 
+diff --git a/scripts/MapNode.gd b/scripts/MapNode.gd
+--- a/scripts/MapNode.gd
++++ b/scripts/MapNode.gd
+@@ -90,9 +90,13 @@ func _get_stage_number() -> int:
+ 
+ func _get_stage_number() -> int:
+ 	# ノード名から階層番号を取得（例: "2-A" → 2, "10-B" → 10）
+ 	var node_name = str(name)
+-	if node_name.length() > 0 and node_name[0].is_valid_int():
+-		return int(node_name[0])
++	var num_str := ""
++	for i in range(node_name.length()):
++		if node_name[i].is_valid_int():
++			num_str += node_name[i]
++		else:
++			break
++	if num_str != "":
++		return int(num_str)
+ 	return 1
+ 
+ func set_passed_visual(passed: bool) -> void:
+diff --git a/scripts/MapScene.gd b/scripts/MapScene.gd
+--- a/scripts/MapScene.gd
++++ b/scripts/MapScene.gd
+@@ -4,11 +4,6 @@ extends Control
+ @onready var path_drawer = $ScrollContainer/ViewportContent/PathDrawer
+ @onready var background = $ScrollContainer/ViewportContent/Background
+ 
+-var unlocked_nodes: Array[String] = []  # 選択可能ノード
+-var node_links: Dictionary = {}  # 例: { "A": ["B", "C"] }
+-
+ func _ready():
+ 	load_node_types_from_csv("res://data/map_nodes.csv")
+ 	load_paths_from_csv("res://data/map_paths.csv")
+@@ -92,22 +87,6 @@ func draw_line_between_nodes(node_a: Control, node_b: Control) -> void:
+ 
+ 	path_drawer.add_child(line)
+ 
+-# 選択可能ノードのロジック
+-func unlock_start_node(start_id: String) -> void:
+-	unlocked_nodes = [start_id]
+-	update_node_interactability()
+-
+-func is_node_unlocked(node_id: String) -> bool:
+-	return unlocked_nodes.has(node_id)
+-
+-func unlock_next_nodes(from_id: String) -> void:
+-	if node_links.has(from_id):
+-		for next_id in node_links[from_id]:
+-			if not unlocked_nodes.has(next_id):
+-				unlocked_nodes.append(next_id)
+-	update_node_interactability()
+-
+ func update_node_interactability():
+ 	print("UI更新中:", Global.unlocked_nodes)
+ 	for node in node_container.get_children():
+diff --git a/scenes/GameClear.gd b/scenes/GameClear.gd
+--- a/scenes/GameClear.gd
++++ b/scenes/GameClear.gd
+@@ -36,7 +36,6 @@ func _reset_run_state() -> void:
+ 	Global.passed_nodes.clear()
+ 	Global.unlocked_nodes.clear()
+ 	Global.current_node_id = ""
+-	Global.last_battle_reward_candidates.clear()
+ 
+ 	# デッキ/キャラ選択
+ 	Global.player_deck.clear()

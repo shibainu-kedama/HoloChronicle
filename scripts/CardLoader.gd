@@ -14,27 +14,19 @@ func load_cards_from_csv(path: String):
 	if file == null:
 		push_error("カードCSVが開けませんでした: " + path)
 		return
-
-	var text = file.get_as_text()
-	var lines = text.split("\n", false)
-
-	if lines.size() <= 1:
+	if file.eof_reached():
 		push_warning("カードCSVにデータがありません")
 		return
 
-	var headers = lines[0].strip_edges().split(",")
-
-	for i in range(1, lines.size()):
-		var line = lines[i].strip_edges()
-		if line == "":
+	var headers: PackedStringArray = file.get_csv_line()
+	while not file.eof_reached():
+		var row: PackedStringArray = file.get_csv_line()
+		if row.size() == 1 and row[0] == "":
 			continue
-
-		var cols = line.split(",", false)
 		var dict := {}
-
-		for j in range(min(headers.size(), cols.size())):
-			dict[headers[j]] = cols[j]
-
+		var count: int = min(headers.size(), row.size())
+		for i in range(count):
+			dict[headers[i]] = row[i]
 		var card = CardData.from_dict(dict)
 		all_cards.append(card)
 	
@@ -45,4 +37,5 @@ func get_card_by_id(id: String) -> CardData:
 	for card in all_cards:
 		if card.id == id:
 			return card
+	push_error("カードID '%s' が見つかりません" % id)
 	return null

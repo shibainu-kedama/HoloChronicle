@@ -3,6 +3,7 @@ extends Control
 @onready var enemy_hp_bar = $VBoxContainer/EnemyHPBar
 @onready var intent_label = $VBoxContainer/EnemyIntentLabel
 @onready var name_label = $VBoxContainer/EnemyNameLabel
+@onready var block_label = $VBoxContainer/EnemyBlockLabel
 
 # 敵名を表示
 func set_enemy_name(enemy_name: String) -> void:
@@ -17,6 +18,10 @@ func initialize_hp(max_hp: int) -> void:
 func set_hp(current_hp: int) -> void:
 	enemy_hp_bar.value = current_hp
 
+func set_block(block_amount: int) -> void:
+	if block_label:
+		block_label.text = "ブロック: %d" % block_amount
+
 # 次の行動の内容をラベルに反映
 func set_intent(intent: Dictionary) -> void:
 	var text := ""
@@ -29,6 +34,8 @@ func set_intent(intent: Dictionary) -> void:
 			text = "バフ準備中"
 		"debuff":
 			text = "デバフ準備中"
+		"block":
+			text = "防御（+%d）" % intent.get("power", 0)
 		_:
 			text = "？？？"
 

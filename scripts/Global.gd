@@ -7,12 +7,11 @@ var current_stage_type: int = StageType.BATTLE
 # プレイヤーHP（-1 = 未初期化）
 var player_hp: int = -1
 var player_max_hp: int = 100
+var player_gold: int = -1
+var player_atk_bonus: int = 0
 
 # プレイヤーのデッキ
 var player_deck: Array[CardData] = []
-
-# 直前の戦闘報酬候補
-var last_battle_reward_candidates: Array[CardData] = []
 
 # 選択中のキャラ（CharacterDataに統一）
 var selected_character: CharacterData
@@ -67,3 +66,21 @@ func set_stage_type_from_string(t: String) -> void:
 
 func is_boss_stage() -> bool:
 	return current_stage_type == StageType.BOSS
+
+
+func reset_run_state() -> void:
+	passed_nodes.clear()
+	unlocked_nodes.clear()
+	node_links.clear()
+	current_node_id = ""
+	current_enemy_id = ""
+
+	player_deck.clear()
+	selected_character = null
+
+	current_stage_type = StageType.BATTLE
+
+	player_hp = -1
+	player_max_hp = 100
+	player_gold = -1
+	player_atk_bonus = 0

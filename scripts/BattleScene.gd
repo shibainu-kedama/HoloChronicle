@@ -12,6 +12,7 @@ extends Control
 @onready var enemy_ui = $EnemyUI
 @onready var enemy_image = $EnemyImage
 @onready var end_turn_button = $EndTurnButton
+@onready var talent_button = $TalentButton
 
 const MAX_ENERGY = 3
 const MAX_HAND_SIZE = 10
@@ -33,10 +34,12 @@ var popup_scene = preload("res://scenes/PopupDamage.tscn")
 
 var enemy_data: EnemyData
 var enemy_hp: int
+var enemy_block = 0
 var next_enemy_action = {}
 
 # 追加: 終了多重防止
 var battle_over := false
+var talent_used_this_turn := false
 
 func _ready():
 	print("バトル開始")
@@ -60,6 +63,10 @@ func _ready():
 
 	player_hp_bar.max_value = player_max_hp
 	player_hp_bar.value = player_hp
+
+	# タレントボタン初期化
+	if Global.selected_character and talent_button:
+		talent_button.text = Global.selected_character.talent_name
 
 	decide_enemy_action()
 	update_ui()
@@ -94,10 +101,16 @@ func _setup_enemy():
 		enemy_image.texture = load(enemy_data.image_path)
 
 func _get_current_stage_number() -> int:
-	# ノードIDから階層番号を取得（例: "2-A" → 2）
+	# ノードIDから階層番号を取得（例: "2-A" → 2, "10-A" → 10）
 	var node_id = Global.current_node_id
-	if node_id.length() > 0 and node_id[0].is_valid_int():
-		return int(node_id[0])
+	var num_str := ""
+	for i in range(node_id.length()):
+		if node_id[i].is_valid_int():
+			num_str += node_id[i]
+		else:
+			break
+	if num_str != "":
+		return int(num_str)
 	return 1
 
 func setup_buttons():
@@ -107,7 +120,9 @@ func setup_buttons():
 func update_ui():
 	player_block_label.text = "ブロック: %d" % player_block
 	energy_label.text = "エナジー: %d" % player_energy
+	enemy_ui.set_block(enemy_block)
 	_update_end_turn_button()
+	_update_talent_button()
 
 func _update_end_turn_button():
 	if end_turn_button:
@@ -123,8 +138,8 @@ func draw_cards(count):
 		if deck.is_empty():
 			return
 		var card_data = deck.pop_front()
-		deck_zone.update_deck_count()
 		send_deck_to_zone()
+		deck_zone.update_deck_count()
 		var card = card_scene.instantiate()
 
 		card.update_card_display(card_data)
@@ -177,8 +192,9 @@ func _on_card_used(card):
 
 	match card.effect_type:
 		"attack":
-			label.text = "攻撃カード使用: %d ダメージ！" % card.power
-			apply_damage_to_enemy(card.power)
+			var dealt = card.power + Global.player_atk_bonus
+			label.text = "攻撃カード使用: %d ダメージ！" % dealt
+			apply_damage_to_enemy(dealt)
 		"block":
 			player_block += card.power
 			label.text = "防御カード使用: ブロック +%d" % card.power
@@ -190,9 +206,12 @@ func _on_card_used(card):
 	card.queue_free()
 
 func apply_damage_to_enemy(amount):
-	enemy_hp = max(enemy_hp - amount, 0)
+	var blocked = min(enemy_block, amount)
+	var actual = amount - blocked
+	enemy_block -= blocked
+	enemy_hp = max(enemy_hp - actual, 0)
 	enemy_ui.set_hp(enemy_hp)
-	show_popup_damage(amount)
+	show_popup_damage(actual)
 
 	check_battle_result()
 
@@ -202,6 +221,8 @@ func _on_EndTurnButton_pressed():
 
 	end_player_turn()
 	await play_enemy_turn()
+	if battle_over or not is_inside_tree():
+		return
 	if turn_state != TurnState.BATTLE_END:
 		start_player_turn()
 
@@ -218,6 +239,7 @@ func end_player_turn():
 
 func start_player_turn():
 	turn_state = TurnState.PLAYER_TURN
+	talent_used_this_turn = false
 	player_block = 0
 	player_energy = MAX_ENERGY - 1 if energy_penalty_next_turn else MAX_ENERGY
 	energy_penalty_next_turn = false
@@ -228,13 +250,18 @@ func start_player_turn():
 
 func play_enemy_turn():
 	await get_tree().create_timer(1.0).timeout
-	match next_enemy_action.type:
+	if battle_over or not is_inside_tree():
+		return
+
+	match next_enemy_action.get("type", ""):
 		"attack":
 			var damage = next_enemy_action.power
 			if enemy_buff_active:
 				damage = int(damage * 1.5)
 				enemy_buff_active = false
 			apply_damage(damage)
+			if battle_over or not is_inside_tree():
+				return
 			label.text = "%sの攻撃！ %d ダメージ！" % [enemy_data.name, damage]
 
 		"multi_attack":
@@ -245,7 +272,11 @@ func play_enemy_turn():
 				enemy_buff_active = false
 			for i in range(hits):
 				await get_tree().create_timer(0.3).timeout
+				if battle_over or not is_inside_tree():
+					return
 				apply_damage(dmg)
+				if battle_over or not is_inside_tree():
+					return
 			label.text = "%sの連続攻撃！" % enemy_data.name
 
 		"buff":
@@ -255,7 +286,13 @@ func play_enemy_turn():
 		"debuff":
 			energy_penalty_next_turn = true
 			label.text = "%sの邪悪な気配… 次ターンのエナジーが減少！" % enemy_data.name
+		"block":
+			var gain = next_enemy_action.get("power", 0)
+			enemy_block += gain
+			label.text = "%sは防御を固めた（ブロック +%d）" % [enemy_data.name, gain]
 
+	if battle_over or not is_inside_tree():
+		return
 	update_ui()
 
 func apply_damage(amount):
@@ -276,12 +313,6 @@ func _on_DiscardZone_pressed():
 
 func _on_DeckZone_pressed():
 	deck_zone.show_deck_popup()
-
-func _on_card_selected(card):
-	if "card_data" in card:
-		discard_pile.append(card.card_data)
-	else:
-		push_error("選択された card に 'card_data' が存在しません。スクリプトがアタッチされているか確認してください。")
 
 func send_deck_to_zone():
 	if deck_zone and deck_zone.has_method("set_cards"):
@@ -326,8 +357,56 @@ func on_defeat():
 	turn_state = TurnState.BATTLE_END
 	_update_end_turn_button()
 
-	# HPをGlobalに書き戻し
-	Global.player_hp = player_hp
+	Global.reset_run_state()
 
 	print("敗北！タイトル画面へ")
 	get_tree().change_scene_to_file("res://scenes/TitleScene.tscn")
+
+
+# === タレント（固有スキル） ===
+
+func _on_TalentButton_pressed():
+	if not is_player_turn() or talent_used_this_turn or battle_over:
+		return
+
+	var cost = _get_talent_cost()
+	if player_energy < cost:
+		label.text = "エナジーが足りない！"
+		return
+
+	if not Global.selected_character:
+		return
+
+	player_energy -= cost
+	talent_used_this_turn = true
+
+	match Global.selected_character.id:
+		"lui":  # 鷹の眼: 3ダメ×3回
+			for i in range(3):
+				apply_damage_to_enemy(3)
+				if battle_over:
+					break
+			label.text = "鷹の眼！ 3×3 = 9ダメージ！"
+		"miko":  # エリート巫女ビーム: 6ダメージ
+			apply_damage_to_enemy(6)
+			label.text = "エリート巫女ビーム！ 6ダメージ！"
+		"suisei":  # スターダストブレイク: 15ダメージ
+			apply_damage_to_enemy(15)
+			label.text = "スターダストブレイク！ 15ダメージ！"
+
+	update_ui()
+
+func _get_talent_cost() -> int:
+	if Global.selected_character and Global.selected_character.id == "suisei":
+		return 2
+	return 1
+
+func _update_talent_button():
+	if not talent_button:
+		return
+	talent_button.disabled = (
+		turn_state != TurnState.PLAYER_TURN
+		or talent_used_this_turn
+		or battle_over
+		or player_energy < _get_talent_cost()
+	)

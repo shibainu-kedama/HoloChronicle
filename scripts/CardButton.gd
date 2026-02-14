@@ -20,6 +20,12 @@ func _ready():
 func _on_pressed():
 	emit_signal("use_card", self)
 
+func _on_mouse_entered() -> void:
+	_hoverfx_on_hover_in()
+
+func _on_mouse_exited() -> void:
+	_hoverfx_on_hover_out()
+
 func update_card_display(data: CardData) -> void:
 	card_data = data
 	card_name = data.name
@@ -58,11 +64,7 @@ func hoverfx_init() -> void:
 	if focus_mode == Control.FOCUS_NONE:
 		focus_mode = Control.FOCUS_ALL
 
-	# ホバー/フォーカス
-	if not mouse_entered.is_connected(_hoverfx_on_hover_in):
-		mouse_entered.connect(_hoverfx_on_hover_in)
-	if not mouse_exited.is_connected(_hoverfx_on_hover_out):
-		mouse_exited.connect(_hoverfx_on_hover_out)
+	# mouse_entered / mouse_exited は tscn 側接続を利用
 	if not focus_entered.is_connected(_hoverfx_on_hover_in):
 		focus_entered.connect(_hoverfx_on_hover_in)
 	if not focus_exited.is_connected(_hoverfx_on_hover_out):

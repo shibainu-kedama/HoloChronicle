@@ -22,7 +22,7 @@ func _ready() -> void:
 	create_tween().tween_property(self, "modulate:a", 1.0, 0.3)
 
 func _on_btn_title() -> void:
-	_reset_run_state()
+	Global.reset_run_state()
 	get_tree().change_scene_to_file(TITLE_SCENE_PATH)
 
 func _save_clear_flag() -> void:
@@ -30,25 +30,3 @@ func _save_clear_flag() -> void:
 	cfg.load("user://save.cfg") # 既存でも新規でもOK
 	cfg.set_value("progress", "cleared_once", true)
 	cfg.save("user://save.cfg")
-
-# 1ラン終了後の状態初期化（タイトルに戻る前提）
-func _reset_run_state() -> void:
-	# マップ進行系
-	Global.passed_nodes.clear()
-	Global.unlocked_nodes.clear()
-	Global.current_node_id = ""
-	Global.last_battle_reward_candidates.clear()
-
-	# デッキ/キャラ選択
-	Global.player_deck.clear()
-	Global.selected_character = null
-
-	# ステージ種別
-	Global.current_stage_type = Global.StageType.BATTLE
-
-	# 敵ID
-	Global.current_enemy_id = ""
-
-	# プレイヤーHP
-	Global.player_hp = -1
-	Global.player_max_hp = 100

@@ -89,10 +89,16 @@ func _on_pressed():
 			print("未定義のタイプ: ", node_type)
 
 func _get_stage_number() -> int:
-	# ノード名から階層番号を取得（例: "2-A" → 2）
+	# ノード名から階層番号を取得（例: "2-A" → 2, "10-B" → 10）
 	var node_name = str(name)
-	if node_name.length() > 0 and node_name[0].is_valid_int():
-		return int(node_name[0])
+	var num_str := ""
+	for i in range(node_name.length()):
+		if node_name[i].is_valid_int():
+			num_str += node_name[i]
+		else:
+			break
+	if num_str != "":
+		return int(num_str)
 	return 1
 
 func set_passed_visual(passed: bool) -> void:

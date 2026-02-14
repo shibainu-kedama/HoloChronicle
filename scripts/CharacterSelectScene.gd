@@ -124,6 +124,8 @@ func _on_confirm_pressed() -> void:
 	Global.selected_character = selected
 	Global.player_hp = selected.hp
 	Global.player_max_hp = selected.hp
+	Global.player_gold = selected.gold
+	Global.player_atk_bonus = 0
 
 	# 初期デッキ読み込み
 	Global.player_deck = DeckLoader.load_starting_deck(selected.id)

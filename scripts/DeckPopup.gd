@@ -12,7 +12,7 @@ func _ready():
 func _on_close_button_pressed():
 	hide()
 
-func show_cards(deck_data: Array):
+func show_cards(deck_data: Array[CardData]) -> void:
 	print("🃏 show_cards() 呼び出し - デッキ枚数: ", deck_data.size())
 
 	# 一度既存のカード表示を削除

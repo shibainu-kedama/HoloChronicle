@@ -17,7 +17,11 @@ func _ready():
 	# Globalのキャラデータからステータスを初期化
 	var ch = Global.selected_character
 	if ch:
-		player_stats = {"hp": ch.hp, "gold": ch.gold, "atk": 0}
+		player_stats = {
+			"hp": Global.player_hp if Global.player_hp > 0 else ch.hp,
+			"gold": Global.player_gold if Global.player_gold >= 0 else ch.gold,
+			"atk": Global.player_atk_bonus
+		}
 	else:
 		player_stats = {"hp": 100, "gold": 50, "atk": 0}
 
@@ -35,7 +39,11 @@ func show_event(ev: EventData):
 	current_event = ev
 	label_title.text = ev.title
 	label_body.text = ev.body
-	event_image.texture = load(ev.image_path)
+	if ev.image_path != "" and ResourceLoader.exists(ev.image_path):
+		event_image.texture = load(ev.image_path)
+	else:
+		event_image.texture = null
+		push_warning("[EventScene] 画像が見つかりません: %s" % ev.image_path)
 
 	# ボタン生成
 	for child in choice_container.get_children():
@@ -57,6 +65,7 @@ func apply_result_and_continue(choice: Dictionary):
 	for key in choice.result.keys():
 		player_stats[key] += choice.result[key]
 		print("player", key, "→", player_stats[key])
+	_sync_stats_to_global()
 
 	var next_id = null
 	if choice.next_event_id == "MAP":
@@ -81,3 +90,9 @@ func apply_result_and_continue(choice: Dictionary):
 func return_to_map():
 	print("マップに戻ります")
 	get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
+
+func _sync_stats_to_global() -> void:
+	var max_hp = max(Global.player_max_hp, 1)
+	Global.player_hp = clamp(int(player_stats.get("hp", Global.player_hp)), 0, max_hp)
+	Global.player_gold = max(int(player_stats.get("gold", Global.player_gold)), 0)
+	Global.player_atk_bonus = max(int(player_stats.get("atk", 0)), 0)

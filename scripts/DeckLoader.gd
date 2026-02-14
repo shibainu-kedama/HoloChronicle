@@ -20,4 +20,5 @@ func load_starting_deck(character_id: String) -> Array[CardData]:
 			var card = CardLoader.get_card_by_id(card_id)
 			if card:
 				deck.append(card)
+	file.close()
 	return deck
