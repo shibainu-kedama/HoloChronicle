@@ -380,10 +380,8 @@ func on_defeat():
 	turn_state = TurnState.BATTLE_END
 	_update_end_turn_button()
 
-	Global.reset_run_state()
-
-	print("敗北！タイトル画面へ")
-	get_tree().change_scene_to_file("res://scenes/TitleScene.tscn")
+	print("敗北！ゲームオーバー画面へ")
+	get_tree().change_scene_to_file("res://scenes/GameOver.tscn")
 
 
 # === タレント（固有スキル） ===
