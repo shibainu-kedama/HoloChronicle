@@ -4,7 +4,7 @@ id,type1,type2,type3
 1-C,rest,rest,rest
 2-A,battle,battle,battle
 2-B,battle,battle,battle
-2-C,event,event,event
-3-A,event,battle,rest
+2-C,event,shop,event
+3-A,event,battle,shop
 3-B,rest,rest,rest
 4-A,boss,boss,boss

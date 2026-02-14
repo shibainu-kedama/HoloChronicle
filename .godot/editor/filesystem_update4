@@ -14,3 +14,6 @@ res://data/cards.power.translation
 res://data/cards.cost.translation
 res://data/cards.info.translation
 res://data/cards.image.translation
+res://data/map_nodes.type1.translation
+res://data/map_nodes.type2.translation
+res://data/map_nodes.type3.translation

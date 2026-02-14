@@ -26,6 +26,8 @@ func set_type(t: String) -> void:
 			icon_texture.texture = preload("res://icons/icon_event.png")
 		"boss":
 			icon_texture.texture = preload("res://icons/icon_boss.png")
+		"shop":
+			icon_texture.texture = preload("res://icons/icon_treasure.png")
 		_:
 			icon_texture.texture = null  # 未定義時は非表示またはデフォルト
 
@@ -85,6 +87,8 @@ func _on_pressed():
 			get_tree().change_scene_to_file("res://scenes/EventScene.tscn")
 		"boss":
 			get_tree().change_scene_to_file("res://scenes/BattleScene.tscn")
+		"shop":
+			get_tree().change_scene_to_file("res://scenes/ShopScene.tscn")
 		_:
 			print("未定義のタイプ: ", node_type)
 

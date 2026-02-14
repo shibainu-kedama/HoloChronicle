@@ -33,8 +33,16 @@ func load_node_types_from_csv(path: String) -> void:
 			continue
 
 		var node_id = cols[0]
-		var type_candidates = cols.slice(1, cols.size())
-		var chosen_type = type_candidates[randi() % type_candidates.size()]
+		var type_candidates: Array[String] = []
+		for raw_type in cols.slice(1, cols.size()):
+			var t = String(raw_type).strip_edges().to_lower()
+			if t != "":
+				type_candidates.append(t)
+		if type_candidates.is_empty():
+			continue
+
+		# shop を含むノードは shop を優先し、イベント化を防ぐ
+		var chosen_type = "shop" if type_candidates.has("shop") else type_candidates[randi() % type_candidates.size()]
 
 		var map_node = node_container.get_node_or_null(node_id)
 		if map_node and map_node.has_method("set_type"):

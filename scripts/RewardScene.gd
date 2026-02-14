@@ -19,6 +19,13 @@ func _ready():
 		print("カードボタンが3つ未満です。シーン構成を確認してください。")
 		return
 
+	# ゴールド獲得
+	var gold_reward = _calc_gold_reward()
+	Global.player_gold += gold_reward
+	var gold_label = $VBoxContainer/Label_Gold
+	if gold_label:
+		gold_label.text = "+%d ゴールド（所持: %d）" % [gold_reward, Global.player_gold]
+
 	# スキップボタン接続
 	var skip_btn = $VBoxContainer/Btn_Skip
 	if skip_btn:
@@ -61,6 +68,26 @@ func _on_card_selected(btn: TextureButton):
 
 func _on_skip_pressed():
 	get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
+
+func _calc_gold_reward() -> int:
+	var stage = _get_stage_number()
+	match stage:
+		1: return randi_range(15, 25)
+		2: return randi_range(20, 30)
+		3: return randi_range(25, 35)
+		_: return randi_range(15, 25)
+
+func _get_stage_number() -> int:
+	var node_id = Global.current_node_id
+	var num_str := ""
+	for i in range(node_id.length()):
+		if node_id[i].is_valid_int():
+			num_str += node_id[i]
+		else:
+			break
+	if num_str != "":
+		return int(num_str)
+	return 1
 
 # ユーティリティ：ランダムにN枚選ぶ
 func pick_random_cards(array: Array, count: int) -> Array:
