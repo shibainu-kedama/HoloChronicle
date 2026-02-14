@@ -1,0 +1,52 @@
+[gd_scene load_steps=3 format=3 uid="uid://3u3rfp2s13w"]
+
+[ext_resource type="Script" path="res://scripts/TitleScene.gd" id="1_6i7gx"]
+[ext_resource type="Texture2D" uid="uid://b6ymbdustwh4l" path="res://images/titleLogo.png" id="2_6y5q4"]
+
+[node name="TitleScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -3.0
+offset_bottom = -5.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_6i7gx")
+
+[node name="TitleImage" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_6y5q4")
+expand_mode = 1
+
+[node name="StartButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -27.5
+offset_top = -31.0
+offset_right = 27.5
+grow_horizontal = 2
+grow_vertical = 0
+text = "スタート"
+
+[node name="QuitButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -77.0
+offset_top = -31.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "ゲーム終了"

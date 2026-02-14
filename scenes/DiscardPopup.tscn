@@ -1,0 +1,64 @@
+[gd_scene load_steps=3 format=3 uid="uid://cn2rsyb2jmsmj"]
+
+[ext_resource type="Script" path="res://scripts/DiscardPopup.gd" id="1_fsmh7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wmbc6"]
+
+[node name="DiscardPopup" type="Panel"]
+custom_minimum_size = Vector2(600, 400)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -200.0
+offset_right = 300.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_wmbc6")
+script = ExtResource("1_fsmh7")
+
+[node name="TitleLabel" type="Label" parent="."]
+custom_minimum_size = Vector2(580, 40)
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -38.5
+offset_right = 38.5
+offset_bottom = 23.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+text = "捨て札一覧"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -49.0
+offset_bottom = 31.0
+grow_horizontal = 0
+text = "閉じる"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+custom_minimum_size = Vector2(580, 330)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="CardList" type="FlowContainer" parent="ScrollContainer"]
+custom_minimum_size = Vector2(580, 0)
+layout_mode = 2

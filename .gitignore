@@ -1,0 +1,20 @@
+# Godot 4+ cache
+.godot/
+
+# Godot import/export cache
+.import/
+.export/
+
+# C# (if you ever use it)
+.mono/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log

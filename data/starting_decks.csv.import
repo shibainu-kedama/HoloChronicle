@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://blcbic3jxx0cx"
+
+[deps]
+
+files=["res://data/starting_decks.card.translation"]
+
+source_file="res://data/starting_decks.csv"
+dest_files=["res://data/starting_decks.card.translation"]
+
+[params]
+
+compress=true
+delimiter=0

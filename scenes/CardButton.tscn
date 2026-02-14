@@ -1,0 +1,62 @@
+[gd_scene load_steps=2 format=3 uid="uid://dgk2likp7r6om"]
+
+[ext_resource type="Script" path="res://scripts/CardButton.gd" id="1_ykufu"]
+
+[node name="CardButton" type="TextureButton"]
+custom_minimum_size = Vector2(100, 140)
+offset_right = 100.0
+offset_bottom = 140.0
+script = ExtResource("1_ykufu")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(100, 140)
+layout_mode = 0
+offset_right = 100.0
+offset_bottom = 140.0
+
+[node name="Label_Name" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "カード名"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Label_Effect" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "効果種別"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBox_Cost" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label_Cost" type="Label" parent="VBoxContainer/HBox_Cost"]
+layout_mode = 2
+text = "コスト"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBox_Power" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label_Power" type="Label" parent="VBoxContainer/HBox_Power"]
+layout_mode = 2
+text = "パワー"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label_Info" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "情報"
+
+[node name="CardTexture" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(100, 140)
+layout_mode = 1
+offset_right = 100.0
+offset_bottom = 140.0
+expand_mode = 1
+stretch_mode = 5
+
+[connection signal="mouse_entered" from="." to="." method="_on_mouse_entered"]
+[connection signal="mouse_exited" from="." to="." method="_on_mouse_exited"]
