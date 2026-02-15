@@ -3,7 +3,9 @@ extends Control
 @onready var node_container = $ScrollContainer/ViewportContent/NodeContainer
 @onready var path_drawer = $ScrollContainer/ViewportContent/PathDrawer
 @onready var background = $ScrollContainer/ViewportContent/Background
-@onready var deck_button := $DeckViewButton
+@onready var deck_button := $StatusPanel/DeckViewButton
+@onready var hp_label := $StatusPanel/HPLabel
+@onready var gold_label := $StatusPanel/GoldLabel
 
 func _ready():
 	load_node_types_from_csv("res://data/map_nodes.csv")
@@ -15,6 +17,11 @@ func _ready():
 		Global.unlocked_nodes = ["1-A", "1-B", "1-C"]  # ←最初は全部開放
 	update_node_interactability()
 	deck_button.pressed.connect(_on_deck_view_pressed)
+	update_status_display()
+
+func update_status_display():
+	hp_label.text = "❤️ HP: %d / %d" % [Global.player_hp, Global.player_max_hp]
+	gold_label.text = "💰 Gold: %d" % Global.player_gold
 
 func _on_deck_view_pressed():
 	var popup = preload("res://scenes/DeckPopup.tscn").instantiate()
