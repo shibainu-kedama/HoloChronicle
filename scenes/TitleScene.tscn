@@ -8,45 +8,114 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -3.0
-offset_bottom = -5.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_6i7gx")
 
-[node name="TitleImage" type="TextureRect" parent="."]
+[node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+color = Color(0.08, 0.06, 0.15, 1)
+
+[node name="TitleLogo" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 60.0
+offset_right = 300.0
+offset_bottom = 360.0
+grow_horizontal = 2
 texture = ExtResource("2_6y5q4")
 expand_mode = 1
+stretch_mode = 5
 
-[node name="StartButton" type="Button" parent="."]
+[node name="ButtonContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -27.5
-offset_top = -31.0
-offset_right = 27.5
+offset_left = -100.0
+offset_top = -220.0
+offset_right = 100.0
 grow_horizontal = 2
 grow_vertical = 0
-text = "スタート"
+theme_override_constants/separation = 16
 
-[node name="QuitButton" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
+[node name="StartButton" type="Button" parent="ButtonContainer"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+text = "はじめる"
+
+[node name="SettingsButton" type="Button" parent="ButtonContainer"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+text = "設定"
+
+[node name="QuitButton" type="Button" parent="ButtonContainer"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+text = "終了"
+
+[node name="SettingsPopup" type="PopupPanel" parent="."]
+title = "設定"
+initial_position = 1
+size = Vector2i(400, 300)
+
+[node name="MarginContainer" type="MarginContainer" parent="SettingsPopup"]
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -77.0
-offset_top = -31.0
-grow_horizontal = 0
-grow_vertical = 0
-text = "ゲーム終了"
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 396.0
+offset_bottom = 296.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SettingsPopup/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BGMLabel" type="Label" parent="SettingsPopup/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "BGM音量"
+
+[node name="BGMSlider" type="HSlider" parent="SettingsPopup/MarginContainer/VBoxContainer"]
+layout_mode = 2
+min_value = -40.0
+max_value = 0.0
+value = -6.0
+
+[node name="SELabel" type="Label" parent="SettingsPopup/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "SE音量"
+
+[node name="SESlider" type="HSlider" parent="SettingsPopup/MarginContainer/VBoxContainer"]
+layout_mode = 2
+min_value = -40.0
+max_value = 0.0
+value = -6.0
+
+[node name="CloseButton" type="Button" parent="SettingsPopup/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "閉じる"
+
+[node name="QuitConfirmDialog" type="ConfirmationDialog" parent="."]
+title = "確認"
+initial_position = 1
+size = Vector2i(300, 120)
+ok_button_text = "はい"
+dialog_text = "終了しますか？"
+cancel_button_text = "いいえ"
