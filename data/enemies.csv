@@ -1,8 +1,8 @@
-id,name,hp,stage,is_boss,image_path,actions
-slime,スライム,20,1,false,res://images/enemy_fubura.png,attack:6:2|block:4:1|debuff:0:1
-goblin,ゴブリン,35,2,false,res://images/enemy_fubura.png,attack:10:2|multi_attack:4x2:1|buff:0:1
-orc,オーク,50,3,false,res://images/enemy_fubura.png,attack:12:2|multi_attack:5x2:1|buff:0:1|debuff:0:1
-dark_knight,ダークナイト,60,4,false,res://images/enemy_fubura.png,attack:14:2|block:8:1|buff:0:1
-golem,ゴーレム,75,5,false,res://images/enemy_fubura.png,attack:10:1|block:12:2|multi_attack:5x3:1
-demon,デーモン,70,6,false,res://images/enemy_fubura.png,attack:16:2|multi_attack:6x2:1|buff:0:1|debuff:0:1
-boss_dragon,ドラゴン,100,7,true,res://images/enemy_fubura.png,attack:18:1|multi_attack:7x3:2|buff:0:1|debuff:0:1
+id,name,hp,stage,is_boss,image_path,actions,count
+slime,スライム,20,1,false,res://images/enemy_fubura.png,attack:6:2|block:4:1|debuff:0:1,2
+goblin,ゴブリン,35,2,false,res://images/enemy_fubura.png,attack:10:2|multi_attack:4x2:1|buff:0:1,2
+orc,オーク,50,3,false,res://images/enemy_fubura.png,attack:12:2|multi_attack:5x2:1|buff:0:1|debuff:0:1,1
+dark_knight,ダークナイト,60,4,false,res://images/enemy_fubura.png,attack:14:2|block:8:1|buff:0:1,1
+golem,ゴーレム,75,5,false,res://images/enemy_fubura.png,attack:10:1|block:12:2|multi_attack:5x3:1,1
+demon,デーモン,70,6,false,res://images/enemy_fubura.png,attack:16:2|multi_attack:6x2:1|buff:0:1|debuff:0:1,1
+boss_dragon,ドラゴン,100,7,true,res://images/enemy_fubura.png,attack:18:1|multi_attack:7x3:2|buff:0:1|debuff:0:1,1

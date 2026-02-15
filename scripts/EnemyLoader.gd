@@ -28,6 +28,8 @@ func load_enemies_from_csv(path: String) -> void:
 		enemy.is_boss = cols[4].strip_edges().to_lower() == "true"
 		enemy.image_path = cols[5]
 		enemy.actions = _parse_actions(cols[6])
+		if cols.size() >= 8:
+			enemy.count = int(cols[7])
 		all_enemies.append(enemy)
 
 func _parse_actions(actions_str: String) -> Array:

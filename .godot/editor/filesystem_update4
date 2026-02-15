@@ -34,3 +34,9 @@ res://data/goods.trigger.translation
 res://data/goods.effect.translation
 res://data/goods.value.translation
 res://data/goods.tag.translation
+res://data/enemies.name.translation
+res://data/enemies.hp.translation
+res://data/enemies.stage.translation
+res://data/enemies.is.translation
+res://data/enemies.image.translation
+res://data/enemies.actions.translation

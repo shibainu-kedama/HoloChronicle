@@ -6,10 +6,10 @@ uid="uid://cgkfrfdolnucc"
 
 [deps]
 
-files=["res://data/enemies.name.translation", "res://data/enemies.hp.translation", "res://data/enemies.stage.translation", "res://data/enemies.is.translation", "res://data/enemies.image.translation", "res://data/enemies.actions.translation"]
+files=["res://data/enemies.name.translation", "res://data/enemies.hp.translation", "res://data/enemies.stage.translation", "res://data/enemies.is.translation", "res://data/enemies.image.translation", "res://data/enemies.actions.translation", "res://data/enemies.count.translation"]
 
 source_file="res://data/enemies.csv"
-dest_files=["res://data/enemies.name.translation", "res://data/enemies.hp.translation", "res://data/enemies.stage.translation", "res://data/enemies.is.translation", "res://data/enemies.image.translation", "res://data/enemies.actions.translation"]
+dest_files=["res://data/enemies.name.translation", "res://data/enemies.hp.translation", "res://data/enemies.stage.translation", "res://data/enemies.is.translation", "res://data/enemies.image.translation", "res://data/enemies.actions.translation", "res://data/enemies.count.translation"]
 
 [params]
 

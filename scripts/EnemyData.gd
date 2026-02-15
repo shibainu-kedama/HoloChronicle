@@ -8,3 +8,4 @@ var stage: int
 var is_boss: bool
 var image_path: String
 var actions: Array = []  # [{"type": "attack", "power": 8, "weight": 2}, ...]
+var count: int = 1

@@ -11,13 +11,30 @@ extends Control
 @onready var discard_label = $DiscardZone/DiscardCountLabel
 @onready var deck_button = $DeckZone/DeckImage
 @onready var deck_zone := $DeckZone
-@onready var enemy_ui = $EnemyUI
-@onready var enemy_image = $EnemyImage
+@onready var enemy_container = $EnemyContainer
 @onready var end_turn_button = $EndTurnButton
 @onready var talent_button = $TalentButton
 
+# 敵スロットUI参照（最大3体）
+@onready var enemy_slots: Array = [
+	$EnemyContainer/EnemySlot0,
+	$EnemyContainer/EnemySlot1,
+	$EnemyContainer/EnemySlot2,
+]
+@onready var enemy_images: Array = [
+	$EnemyContainer/EnemySlot0/EnemyImage0,
+	$EnemyContainer/EnemySlot1/EnemyImage1,
+	$EnemyContainer/EnemySlot2/EnemyImage2,
+]
+@onready var enemy_uis: Array = [
+	$EnemyContainer/EnemySlot0/EnemyUI0,
+	$EnemyContainer/EnemySlot1/EnemyUI1,
+	$EnemyContainer/EnemySlot2/EnemyUI2,
+]
+
 const MAX_ENERGY = 3
 const MAX_HAND_SIZE = 10
+const MAX_ENEMIES = 3
 
 enum TurnState { PLAYER_TURN, ENEMY_TURN, BATTLE_END }
 var turn_state: TurnState = TurnState.PLAYER_TURN
@@ -27,17 +44,17 @@ var player_max_hp: int
 var player_block = 0
 var player_energy = MAX_ENERGY
 var player_statuses: Dictionary = {}
-var enemy_statuses: Dictionary = {}
 
 var deck: Array[CardData] = []
 var discard_pile: Array[CardData] = []
 var card_scene = preload("res://scenes/CardButton.tscn")
 var popup_scene = preload("res://scenes/PopupDamage.tscn")
 
-var enemy_data: EnemyData
-var enemy_hp: int
-var enemy_block = 0
-var next_enemy_action = {}
+var enemy_data: EnemyData  # 元の敵データ（共通）
+
+# 複数敵配列: [{data, hp, block, statuses, action}]
+var enemies: Array = []
+var target_index: int = 0
 
 # 追加: 終了多重防止
 var battle_over := false
@@ -45,40 +62,33 @@ var talent_used_this_turn := false
 
 func _ready():
 	print("バトル開始")
-	# キャラ選択シーンで設定されたデッキを受け取る
 	deck = Global.player_deck.duplicate() as Array[CardData]
-	# デッキをシャッフルする
 	deck.shuffle()
 
-	# プレイヤーHP設定（Globalから復元）
 	player_max_hp = Global.player_max_hp
 	if Global.player_hp > 0:
 		player_hp = Global.player_hp
 	else:
 		player_hp = player_max_hp
 
-	# 敵データ読み込み
-	_setup_enemy()
+	_setup_enemies()
 
 	player_hp_bar.max_value = player_max_hp
 	player_hp_bar.value = player_hp
 
-	# タレントボタン初期化
 	if Global.selected_character and talent_button:
 		talent_button.text = Global.selected_character.talent_name
 
 	setup_buttons()
 	start_player_turn()
-	# グッズ効果: battle_start（start_player_turn の初期化後に適用）
 	_apply_goods_effects("battle_start", null)
 	update_ui()
 
-func _setup_enemy():
-	# Global.current_enemy_id が設定されていればそれを使う
+func _setup_enemies():
+	# 敵データ取得
 	if Global.current_enemy_id != "":
 		enemy_data = EnemyLoader.get_enemy_by_id(Global.current_enemy_id)
 
-	# IDが未設定 or 見つからない場合はステージに応じてランダム選択
 	if enemy_data == null:
 		var stage = _get_current_stage_number()
 		var is_boss = Global.is_boss_stage()
@@ -92,17 +102,41 @@ func _setup_enemy():
 		enemy_data.hp = 20
 		enemy_data.image_path = "res://images/enemy_fubura.png"
 		enemy_data.actions = [{"type": "attack", "power": 6, "weight": 1}]
+		enemy_data.count = 1
 
-	enemy_hp = enemy_data.hp
-	enemy_ui.initialize_hp(enemy_data.hp)
-	enemy_ui.set_enemy_name(enemy_data.name)
+	var count = clampi(enemy_data.count, 1, MAX_ENEMIES)
 
-	# 敵画像セット
-	if ResourceLoader.exists(enemy_data.image_path):
-		enemy_image.texture = load(enemy_data.image_path)
+	# 全スロット非表示にしてから必要数だけ表示
+	for i in range(MAX_ENEMIES):
+		enemy_slots[i].visible = false
+
+	enemies.clear()
+	for i in range(count):
+		var enemy_dict = {
+			"data": enemy_data,
+			"hp": enemy_data.hp,
+			"block": 0,
+			"statuses": {},
+			"action": {},
+		}
+		enemies.append(enemy_dict)
+
+		# スロット表示・初期化
+		enemy_slots[i].visible = true
+		enemy_uis[i].initialize_hp(enemy_data.hp)
+		enemy_uis[i].set_enemy_name(enemy_data.name)
+
+		if ResourceLoader.exists(enemy_data.image_path):
+			enemy_images[i].texture_normal = load(enemy_data.image_path)
+
+		# クリックでターゲット選択
+		enemy_images[i].pressed.connect(_on_enemy_clicked.bind(i))
+
+	# デフォルトターゲット: 最初の敵
+	target_index = 0
+	_update_target_highlight()
 
 func _get_current_stage_number() -> int:
-	# ノードIDから階層番号を取得（例: "2-A" → 2, "10-A" → 10）
 	var node_id = Global.current_node_id
 	var num_str := ""
 	for i in range(node_id.length()):
@@ -114,35 +148,108 @@ func _get_current_stage_number() -> int:
 		return int(num_str)
 	return 1
 
+# === ターゲット選択 ===
+
+func _on_enemy_clicked(index: int):
+	if index < 0 or index >= enemies.size():
+		return
+	if enemies[index].hp <= 0:
+		return
+	target_index = index
+	_update_target_highlight()
+
+func _update_target_highlight():
+	for i in range(enemies.size()):
+		if not enemy_slots[i].visible:
+			continue
+		if i == target_index and enemies[i].hp > 0:
+			enemy_images[i].modulate = Color(1.3, 1.3, 1.3, 1.0)
+		else:
+			enemy_images[i].modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+func _select_next_alive_target():
+	# 現在のターゲットが生存中ならそのまま
+	if target_index >= 0 and target_index < enemies.size() and enemies[target_index].hp > 0:
+		return
+	# 次の生存敵を探す
+	for i in range(enemies.size()):
+		if enemies[i].hp > 0:
+			target_index = i
+			_update_target_highlight()
+			return
+
+# === ボタンセットアップ ===
+
 func setup_buttons():
 	discard_button.pressed.connect(_on_DiscardZone_pressed)
 	deck_button.pressed.connect(_on_DeckZone_pressed)
+
+# === UI更新 ===
 
 func update_ui():
 	if player_hp_label:
 		player_hp_label.text = "HP: %d / %d" % [player_hp, player_max_hp]
 	player_block_label.text = "ブロック: %d" % player_block
 	energy_label.text = "エナジー: %d" % player_energy
-	enemy_ui.set_block(enemy_block)
-	# ステータス表示更新
-	enemy_ui.set_statuses(enemy_statuses)
+
+	# 各敵のUI更新
+	for i in range(enemies.size()):
+		if enemies[i].hp <= 0:
+			continue
+		enemy_uis[i].set_block(enemies[i].block)
+		enemy_uis[i].set_statuses(enemies[i].statuses)
+
+	# プレイヤーステータス
 	if player_status_label:
-		player_status_label.text = enemy_ui.format_statuses(player_statuses)
+		player_status_label.text = _format_statuses(player_statuses)
 	_update_end_turn_button()
 	_update_talent_button()
 
 # === ステータス効果システム ===
 
-func add_status(target: String, status: String, stacks: int) -> void:
-	var dict = player_statuses if target == "player" else enemy_statuses
-	dict[status] = dict.get(status, 0) + stacks
+func _format_statuses(statuses: Dictionary) -> String:
+	var parts: Array[String] = []
+	for key in statuses:
+		var val = statuses[key]
+		if val <= 0:
+			continue
+		match key:
+			"weak":
+				parts.append("脱力%d" % val)
+			"vulnerable":
+				parts.append("脆弱%d" % val)
+			"strength":
+				parts.append("筋力+%d" % val)
+	return " ".join(parts)
 
-func get_status(target: String, status: String) -> int:
-	var dict = player_statuses if target == "player" else enemy_statuses
-	return dict.get(status, 0)
+func add_status(target: String, status: String, stacks: int, enemy_idx: int = -1) -> void:
+	if target == "player":
+		player_statuses[status] = player_statuses.get(status, 0) + stacks
+	else:
+		var idx = enemy_idx if enemy_idx >= 0 else target_index
+		if idx >= 0 and idx < enemies.size():
+			var dict = enemies[idx].statuses
+			dict[status] = dict.get(status, 0) + stacks
 
-func decay_statuses(target: String) -> void:
-	var dict = player_statuses if target == "player" else enemy_statuses
+func get_status(target: String, status: String, enemy_idx: int = -1) -> int:
+	if target == "player":
+		return player_statuses.get(status, 0)
+	else:
+		var idx = enemy_idx if enemy_idx >= 0 else target_index
+		if idx >= 0 and idx < enemies.size():
+			return enemies[idx].statuses.get(status, 0)
+		return 0
+
+func decay_statuses(target: String, enemy_idx: int = -1) -> void:
+	var dict: Dictionary
+	if target == "player":
+		dict = player_statuses
+	else:
+		var idx = enemy_idx if enemy_idx >= 0 else target_index
+		if idx < 0 or idx >= enemies.size():
+			return
+		dict = enemies[idx].statuses
+
 	var to_remove: Array[String] = []
 	for key in dict:
 		if key == "strength":
@@ -153,18 +260,21 @@ func decay_statuses(target: String) -> void:
 	for key in to_remove:
 		dict.erase(key)
 
-func calc_attack_damage(base: int, attacker: String) -> int:
-	var defender = "enemy" if attacker == "player" else "player"
-	var dmg = base + get_status(attacker, "strength")
-	if get_status(attacker, "weak") > 0:
+func calc_attack_damage(base: int, attacker: String, attacker_idx: int = -1, defender_idx: int = -1) -> int:
+	var dmg = base + get_status(attacker, "strength", attacker_idx)
+	if get_status(attacker, "weak", attacker_idx) > 0:
 		dmg = int(dmg * 0.75)
-	if get_status(defender, "vulnerable") > 0:
+	var defender = "enemy" if attacker == "player" else "player"
+	var def_idx = defender_idx if defender_idx >= 0 else target_index
+	if get_status(defender, "vulnerable", def_idx) > 0:
 		dmg = int(dmg * 1.5)
 	return max(dmg, 0)
 
 func _update_end_turn_button():
 	if end_turn_button:
 		end_turn_button.disabled = turn_state != TurnState.PLAYER_TURN
+
+# === カード処理 ===
 
 func draw_cards(count):
 	print("draw_cards", str(deck.size()))
@@ -179,9 +289,7 @@ func draw_cards(count):
 		send_deck_to_zone()
 		deck_zone.update_deck_count()
 		var card = card_scene.instantiate()
-
 		card.update_card_display(card_data)
-
 		card.use_card.connect(_on_card_used)
 		card_container.add_child(card)
 
@@ -190,27 +298,6 @@ func reshuffle_deck():
 	discard_pile.clear()
 	discard_label.text = str(discard_pile.size())
 	deck.shuffle()
-
-func decide_enemy_action():
-	if enemy_data == null or enemy_data.actions.is_empty():
-		next_enemy_action = {"type": "attack", "power": 6}
-		enemy_ui.set_intent(next_enemy_action)
-		return
-
-	# 重み付きランダム選択
-	var total_weight = 0
-	for action in enemy_data.actions:
-		total_weight += action.get("weight", 1)
-
-	var roll = randi() % total_weight
-	var cumulative = 0
-	for action in enemy_data.actions:
-		cumulative += action.get("weight", 1)
-		if roll < cumulative:
-			next_enemy_action = action.duplicate()
-			break
-
-	enemy_ui.set_intent(next_enemy_action)
 
 func Discard_update(card):
 	discard_pile.append(card.card_data)
@@ -231,7 +318,6 @@ func _on_card_used(card):
 	match card.effect_type:
 		"attack":
 			var base = card.power + Global.player_atk_bonus
-			# エリートな一撃: 敵にデバフがあれば12ダメージ
 			if card.card_data.id == "elite_strike" and (get_status("enemy", "weak") > 0 or get_status("enemy", "vulnerable") > 0):
 				base = 12 + Global.player_atk_bonus
 			var dealt = calc_attack_damage(base, "player")
@@ -270,21 +356,32 @@ func _on_card_used(card):
 			add_status("enemy", "weak", card.power)
 			label.text = "敵に脱力を%d付与！" % card.power
 
-	# グッズ効果: on_tagged_card（推しタグカード使用時）
 	_apply_goods_effects("on_tagged_card", card)
-
 	update_ui()
 	card.queue_free()
 
-func apply_damage_to_enemy(amount):
-	var blocked = min(enemy_block, amount)
+# === 敵へのダメージ ===
+
+func apply_damage_to_enemy(amount: int, index: int = -1):
+	var idx = index if index >= 0 else target_index
+	if idx < 0 or idx >= enemies.size():
+		return
+	var e = enemies[idx]
+	var blocked = min(e.block, amount)
 	var actual = amount - blocked
-	enemy_block -= blocked
-	enemy_hp = max(enemy_hp - actual, 0)
-	enemy_ui.set_hp(enemy_hp)
-	show_popup_damage(actual)
+	e.block -= blocked
+	e.hp = max(e.hp - actual, 0)
+	enemy_uis[idx].set_hp(e.hp)
+	show_popup_damage(actual, idx)
+
+	if e.hp <= 0:
+		# 撃破 → スロット非表示化
+		enemy_slots[idx].visible = false
+		_select_next_alive_target()
 
 	check_battle_result()
+
+# === ターン管理 ===
 
 func _on_EndTurnButton_pressed():
 	if not is_player_turn():
@@ -314,56 +411,97 @@ func start_player_turn():
 	talent_used_this_turn = false
 	player_block = 0
 	player_energy = MAX_ENERGY
-	decide_enemy_action()
+
+	# 全生存敵のブロックリセット＆行動決定
+	for i in range(enemies.size()):
+		if enemies[i].hp > 0:
+			enemies[i].block = 0
+			decide_enemy_action(i)
+
 	draw_cards(3)
-
-	# グッズ効果: turn_start
 	_apply_goods_effects("turn_start", null)
-
 	update_ui()
 	label.text = "プレイヤーのターン！カードを選んでください"
 
+# === 敵行動決定 ===
+
+func decide_enemy_action(index: int):
+	var e = enemies[index]
+	var data = e.data
+	if data == null or data.actions.is_empty():
+		e.action = {"type": "attack", "power": 6}
+		enemy_uis[index].set_intent(e.action)
+		return
+
+	var total_weight = 0
+	for action in data.actions:
+		total_weight += action.get("weight", 1)
+
+	var roll = randi() % total_weight
+	var cumulative = 0
+	for action in data.actions:
+		cumulative += action.get("weight", 1)
+		if roll < cumulative:
+			e.action = action.duplicate()
+			break
+
+	enemy_uis[index].set_intent(e.action)
+
+# === 敵ターン（全敵が順番に行動） ===
+
 func play_enemy_turn():
-	await get_tree().create_timer(1.0).timeout
-	if battle_over or not is_inside_tree():
-		return
+	for i in range(enemies.size()):
+		if battle_over or not is_inside_tree():
+			return
+		if enemies[i].hp <= 0:
+			continue
 
-	match next_enemy_action.get("type", ""):
-		"attack":
-			var damage = calc_attack_damage(next_enemy_action.power, "enemy")
-			apply_damage(damage)
-			if battle_over or not is_inside_tree():
-				return
-			label.text = "%sの攻撃！ %d ダメージ！" % [enemy_data.name, damage]
+		await get_tree().create_timer(0.8).timeout
+		if battle_over or not is_inside_tree():
+			return
 
-		"multi_attack":
-			var hits = next_enemy_action.get("times", 2)
-			var dmg = calc_attack_damage(next_enemy_action.power, "enemy")
-			for i in range(hits):
-				await get_tree().create_timer(0.3).timeout
+		var e = enemies[i]
+		var e_name = e.data.name if e.data else "敵"
+
+		match e.action.get("type", ""):
+			"attack":
+				var damage = calc_attack_damage(e.action.power, "enemy", i)
+				apply_damage(damage)
 				if battle_over or not is_inside_tree():
 					return
-				apply_damage(dmg)
-				if battle_over or not is_inside_tree():
-					return
-			label.text = "%sの連続攻撃！" % enemy_data.name
+				label.text = "%sの攻撃！ %d ダメージ！" % [e_name, damage]
 
-		"buff":
-			add_status("enemy", "strength", 3)
-			label.text = "%sは力を溜めている…筋力+3！" % enemy_data.name
+			"multi_attack":
+				var hits = e.action.get("times", 2)
+				var dmg = calc_attack_damage(e.action.power, "enemy", i)
+				for h in range(hits):
+					await get_tree().create_timer(0.3).timeout
+					if battle_over or not is_inside_tree():
+						return
+					apply_damage(dmg)
+					if battle_over or not is_inside_tree():
+						return
+				label.text = "%sの連続攻撃！" % e_name
 
-		"debuff":
-			add_status("player", "weak", 1)
-			label.text = "%sの邪悪な気配… プレイヤーに脱力付与！" % enemy_data.name
-		"block":
-			var gain = next_enemy_action.get("power", 0)
-			enemy_block += gain
-			label.text = "%sは防御を固めた（ブロック +%d）" % [enemy_data.name, gain]
+			"buff":
+				add_status("enemy", "strength", 3, i)
+				label.text = "%sは力を溜めている…筋力+3！" % e_name
 
-	if battle_over or not is_inside_tree():
-		return
-	decay_statuses("enemy")
-	update_ui()
+			"debuff":
+				add_status("player", "weak", 1)
+				label.text = "%sの邪悪な気配… プレイヤーに脱力付与！" % e_name
+
+			"block":
+				var gain = e.action.get("power", 0)
+				e.block += gain
+				label.text = "%sは防御を固めた（ブロック +%d）" % [e_name, gain]
+
+		if battle_over or not is_inside_tree():
+			return
+		decay_statuses("enemy", i)
+		update_ui()
+
+# === プレイヤーへのダメージ ===
 
 func apply_damage(amount):
 	var blocked = min(player_block, amount)
@@ -374,6 +512,59 @@ func apply_damage(amount):
 	print("被ダメ: %d (ブロック: %d → %d), 残HP: %d" % [amount, blocked, player_block, player_hp])
 
 	check_battle_result()
+
+# === ポップアップダメージ ===
+
+func show_popup_damage(amount: int, index: int = -1):
+	var idx = index if index >= 0 else target_index
+	var popup = popup_scene.instantiate()
+	add_child(popup)
+	if idx >= 0 and idx < enemy_images.size():
+		popup.global_position = enemy_images[idx].global_position
+	popup.show_damage(amount)
+
+# === バトル結果判定 ===
+
+func check_battle_result():
+	# 全敵撃破で勝利
+	var all_dead = true
+	for e in enemies:
+		if e.hp > 0:
+			all_dead = false
+			break
+	if all_dead:
+		on_victory()
+	elif player_hp <= 0:
+		on_defeat()
+
+func on_victory():
+	if battle_over:
+		return
+	battle_over = true
+	turn_state = TurnState.BATTLE_END
+	_update_end_turn_button()
+
+	_apply_goods_effects("battle_end", null)
+	Global.player_hp = player_hp
+
+	if Global.is_boss_stage():
+		print("勝利！ボス戦なのでゲームクリアへ")
+		get_tree().change_scene_to_file("res://scenes/GameClear.tscn")
+	else:
+		print("勝利！報酬画面へ")
+		get_tree().change_scene_to_file("res://scenes/RewardScene.tscn")
+
+func on_defeat():
+	if battle_over:
+		return
+	battle_over = true
+	turn_state = TurnState.BATTLE_END
+	_update_end_turn_button()
+
+	print("敗北！ゲームオーバー画面へ")
+	get_tree().change_scene_to_file("res://scenes/GameOver.tscn")
+
+# === その他UI ===
 
 func _on_DiscardZone_pressed():
 	var popup = preload("res://scenes/DiscardPopup.tscn").instantiate()
@@ -389,50 +580,6 @@ func send_deck_to_zone():
 		deck_zone.set_cards(deck)
 	else:
 		push_error("DeckZoneが見つからない、または set_cards が定義されていません")
-
-func show_popup_damage(amount: int):
-	var popup = popup_scene.instantiate()
-	add_child(popup)
-	popup.global_position = enemy_image.global_position
-	popup.show_damage(amount)
-
-func check_battle_result():
-	if enemy_hp <= 0:
-		on_victory()
-	elif player_hp <= 0:
-		on_defeat()
-
-func on_victory():
-	if battle_over:
-		return
-	battle_over = true
-	turn_state = TurnState.BATTLE_END
-	_update_end_turn_button()
-
-	# グッズ効果: battle_end
-	_apply_goods_effects("battle_end", null)
-
-	# HPをGlobalに書き戻し
-	Global.player_hp = player_hp
-
-	if Global.is_boss_stage():
-		print("勝利！ボス戦なのでゲームクリアへ")
-		get_tree().change_scene_to_file("res://scenes/GameClear.tscn")
-	else:
-		print("勝利！報酬画面へ")
-		get_tree().change_scene_to_file("res://scenes/RewardScene.tscn")
-
-
-func on_defeat():
-	if battle_over:
-		return
-	battle_over = true
-	turn_state = TurnState.BATTLE_END
-	_update_end_turn_button()
-
-	print("敗北！ゲームオーバー画面へ")
-	get_tree().change_scene_to_file("res://scenes/GameOver.tscn")
-
 
 # === タレント（固有スキル） ===
 
@@ -482,7 +629,6 @@ func _update_talent_button():
 		or player_energy < _get_talent_cost()
 	)
 
-
 # === グッズ（パッシブ効果） ===
 
 func _apply_goods_effects(trigger: String, card) -> void:
@@ -494,7 +640,6 @@ func _apply_goods_effects(trigger: String, card) -> void:
 		if goods.trigger != trigger:
 			continue
 
-		# on_tagged_card: 推しタグを持つカード使用時のみ発動
 		if trigger == "on_tagged_card":
 			if card == null or not card.card_data.has_tag(char_tag):
 				continue
