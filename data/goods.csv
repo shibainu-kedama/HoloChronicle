@@ -1,0 +1,5 @@
+id,name,description,trigger,effect,value,tag
+miko_armband,35Pの腕章,戦闘終了時HP6回復,battle_end,heal,6,miko
+lui_emblem,holoXの紋章,ターン開始時ブロック3,turn_start,block,3,lui
+suisei_penlight,星のペンライト,戦闘開始時エナジー+1,battle_start,energy,1,suisei
+mascot,限定マスコット,推しタグカード使用時ブロック1,on_tagged_card,block,1,

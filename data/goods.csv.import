@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://d0bja6w1wx515"
+
+[deps]
+
+files=["res://data/goods.name.translation", "res://data/goods.description.translation", "res://data/goods.trigger.translation", "res://data/goods.effect.translation", "res://data/goods.value.translation", "res://data/goods.tag.translation"]
+
+source_file="res://data/goods.csv"
+dest_files=["res://data/goods.name.translation", "res://data/goods.description.translation", "res://data/goods.trigger.translation", "res://data/goods.effect.translation", "res://data/goods.value.translation", "res://data/goods.tag.translation"]
+
+[params]
+
+compress=true
+delimiter=0

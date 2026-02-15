@@ -58,9 +58,6 @@ func _ready():
 	# 敵データ読み込み
 	_setup_enemy()
 
-	# デッキから3枚引く
-	draw_cards(3)
-
 	player_hp_bar.max_value = player_max_hp
 	player_hp_bar.value = player_hp
 
@@ -68,9 +65,11 @@ func _ready():
 	if Global.selected_character and talent_button:
 		talent_button.text = Global.selected_character.talent_name
 
-	decide_enemy_action()
-	update_ui()
 	setup_buttons()
+	start_player_turn()
+	# グッズ効果: battle_start（start_player_turn の初期化後に適用）
+	_apply_goods_effects("battle_start", null)
+	update_ui()
 
 func _setup_enemy():
 	# Global.current_enemy_id が設定されていればそれを使う
@@ -225,6 +224,9 @@ func _on_card_used(card):
 			player_hp_bar.value = player_hp
 			label.text = "回復！ HP +%d" % card.power
 
+	# グッズ効果: on_tagged_card（推しタグカード使用時）
+	_apply_goods_effects("on_tagged_card", card)
+
 	update_ui()
 	card.queue_free()
 
@@ -268,6 +270,10 @@ func start_player_turn():
 	energy_penalty_next_turn = false
 	decide_enemy_action()
 	draw_cards(3)
+
+	# グッズ効果: turn_start
+	_apply_goods_effects("turn_start", null)
+
 	update_ui()
 	label.text = "プレイヤーのターン！カードを選んでください"
 
@@ -362,6 +368,9 @@ func on_victory():
 	turn_state = TurnState.BATTLE_END
 	_update_end_turn_button()
 
+	# グッズ効果: battle_end
+	_apply_goods_effects("battle_end", null)
+
 	# HPをGlobalに書き戻し
 	Global.player_hp = player_hp
 
@@ -431,3 +440,35 @@ func _update_talent_button():
 		or battle_over
 		or player_energy < _get_talent_cost()
 	)
+
+
+# === グッズ（パッシブ効果） ===
+
+func _apply_goods_effects(trigger: String, card) -> void:
+	var char_tag := ""
+	if Global.selected_character:
+		char_tag = Global.selected_character.tag
+
+	for goods in Global.player_goods:
+		if goods.trigger != trigger:
+			continue
+
+		# on_tagged_card: 推しタグを持つカード使用時のみ発動
+		if trigger == "on_tagged_card":
+			if card == null or not card.card_data.has_tag(char_tag):
+				continue
+
+		match goods.effect:
+			"heal":
+				player_hp = min(player_hp + goods.value, player_max_hp)
+				player_hp_bar.value = player_hp
+				print("🎁 グッズ[%s]: HP +%d" % [goods.name, goods.value])
+			"block":
+				player_block += goods.value
+				print("🎁 グッズ[%s]: ブロック +%d" % [goods.name, goods.value])
+			"energy":
+				player_energy += goods.value
+				print("🎁 グッズ[%s]: エナジー +%d" % [goods.name, goods.value])
+			"gold":
+				Global.player_gold += goods.value
+				print("🎁 グッズ[%s]: ゴールド +%d" % [goods.name, goods.value])

@@ -131,6 +131,14 @@ func _on_confirm_pressed() -> void:
 	Global.player_deck = DeckLoader.load_starting_deck(selected.id)
 	print("🃏 初期デッキ:", Global.player_deck.map(func(c): return c.name))
 
+	# 初期グッズ付与
+	Global.player_goods.clear()
+	if selected.starting_goods_id != "":
+		var goods = CardLoader.get_goods_by_id(selected.starting_goods_id)
+		if goods:
+			Global.player_goods.append(goods)
+			print("🎁 初期グッズ:", goods.name)
+
 	# フェード付きでマップへ
 	await FadeLayer.change_scene_with_fade("res://scenes/MapScene.tscn")
 

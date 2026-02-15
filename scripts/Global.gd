@@ -13,6 +13,9 @@ var player_atk_bonus: int = 0
 # プレイヤーのデッキ
 var player_deck: Array[CardData] = []
 
+# プレイヤーのグッズ（パッシブ効果）
+var player_goods: Array[GoodsData] = []
+
 # 選択中のキャラ（CharacterDataに統一）
 var selected_character: CharacterData
 
@@ -82,6 +85,7 @@ func reset_run_state() -> void:
 	current_enemy_id = ""
 
 	player_deck.clear()
+	player_goods.clear()
 	selected_character = null
 
 	current_stage_type = StageType.BATTLE

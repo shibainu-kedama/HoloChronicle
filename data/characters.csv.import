@@ -6,10 +6,10 @@ uid="uid://braxadrb45uas"
 
 [deps]
 
-files=["res://data/characters.name.translation", "res://data/characters.description.translation", "res://data/characters.hp.translation", "res://data/characters.gold.translation", "res://data/characters.talent.translation", "res://data/characters.talent.translation", "res://data/characters.talent.translation", "res://data/characters.image.translation", "res://data/characters.tag.translation"]
+files=["res://data/characters.name.translation", "res://data/characters.description.translation", "res://data/characters.hp.translation", "res://data/characters.gold.translation", "res://data/characters.talent.translation", "res://data/characters.talent.translation", "res://data/characters.talent.translation", "res://data/characters.image.translation", "res://data/characters.tag.translation", "res://data/characters.starting.translation"]
 
 source_file="res://data/characters.csv"
-dest_files=["res://data/characters.name.translation", "res://data/characters.description.translation", "res://data/characters.hp.translation", "res://data/characters.gold.translation", "res://data/characters.talent.translation", "res://data/characters.talent.translation", "res://data/characters.talent.translation", "res://data/characters.image.translation", "res://data/characters.tag.translation"]
+dest_files=["res://data/characters.name.translation", "res://data/characters.description.translation", "res://data/characters.hp.translation", "res://data/characters.gold.translation", "res://data/characters.talent.translation", "res://data/characters.talent.translation", "res://data/characters.talent.translation", "res://data/characters.image.translation", "res://data/characters.tag.translation", "res://data/characters.starting.translation"]
 
 [params]
 
