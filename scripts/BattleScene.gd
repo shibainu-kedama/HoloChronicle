@@ -2,8 +2,10 @@ extends Control
 
 @onready var card_container = $CardContainer
 @onready var player_hp_bar = $PlayerHPBar
+@onready var player_hp_label = $PlayerHPLabel
 @onready var label = $InfoLabel
 @onready var player_block_label = $BlockLabel
+@onready var player_status_label = $PlayerStatusLabel
 @onready var energy_label = $EnergyLabel
 @onready var discard_button = $DiscardZone
 @onready var discard_label = $DiscardZone/DiscardCountLabel
@@ -24,8 +26,8 @@ var player_hp: int
 var player_max_hp: int
 var player_block = 0
 var player_energy = MAX_ENERGY
-var energy_penalty_next_turn = false
-var enemy_buff_active = false  # 敵バフ: 次の攻撃1.5倍
+var player_statuses: Dictionary = {}
+var enemy_statuses: Dictionary = {}
 
 var deck: Array[CardData] = []
 var discard_pile: Array[CardData] = []
@@ -117,11 +119,48 @@ func setup_buttons():
 	deck_button.pressed.connect(_on_DeckZone_pressed)
 
 func update_ui():
+	if player_hp_label:
+		player_hp_label.text = "HP: %d / %d" % [player_hp, player_max_hp]
 	player_block_label.text = "ブロック: %d" % player_block
 	energy_label.text = "エナジー: %d" % player_energy
 	enemy_ui.set_block(enemy_block)
+	# ステータス表示更新
+	enemy_ui.set_statuses(enemy_statuses)
+	if player_status_label:
+		player_status_label.text = enemy_ui.format_statuses(player_statuses)
 	_update_end_turn_button()
 	_update_talent_button()
+
+# === ステータス効果システム ===
+
+func add_status(target: String, status: String, stacks: int) -> void:
+	var dict = player_statuses if target == "player" else enemy_statuses
+	dict[status] = dict.get(status, 0) + stacks
+
+func get_status(target: String, status: String) -> int:
+	var dict = player_statuses if target == "player" else enemy_statuses
+	return dict.get(status, 0)
+
+func decay_statuses(target: String) -> void:
+	var dict = player_statuses if target == "player" else enemy_statuses
+	var to_remove: Array[String] = []
+	for key in dict:
+		if key == "strength":
+			continue
+		dict[key] -= 1
+		if dict[key] <= 0:
+			to_remove.append(key)
+	for key in to_remove:
+		dict.erase(key)
+
+func calc_attack_damage(base: int, attacker: String) -> int:
+	var defender = "enemy" if attacker == "player" else "player"
+	var dmg = base + get_status(attacker, "strength")
+	if get_status(attacker, "weak") > 0:
+		dmg = int(dmg * 0.75)
+	if get_status(defender, "vulnerable") > 0:
+		dmg = int(dmg * 1.5)
+	return max(dmg, 0)
 
 func _update_end_turn_button():
 	if end_turn_button:
@@ -191,16 +230,20 @@ func _on_card_used(card):
 
 	match card.effect_type:
 		"attack":
-			var dealt = card.power + Global.player_atk_bonus
+			var base = card.power + Global.player_atk_bonus
+			# エリートな一撃: 敵にデバフがあれば12ダメージ
+			if card.card_data.id == "elite_strike" and (get_status("enemy", "weak") > 0 or get_status("enemy", "vulnerable") > 0):
+				base = 12 + Global.player_atk_bonus
+			var dealt = calc_attack_damage(base, "player")
 			label.text = "攻撃カード使用: %d ダメージ！" % dealt
 			apply_damage_to_enemy(dealt)
 		"self_attack":
-			var dealt = card.power + Global.player_atk_bonus
+			var dealt = calc_attack_damage(card.power + Global.player_atk_bonus, "player")
 			apply_damage_to_enemy(dealt)
 			apply_damage(5)
 			label.text = "捨て身！ %dダメージ！ 反動で5ダメージ！" % dealt
 		"multi_attack":
-			var hit_dmg = card.power + Global.player_atk_bonus
+			var hit_dmg = calc_attack_damage(card.power + Global.player_atk_bonus, "player")
 			for i in range(3):
 				apply_damage_to_enemy(hit_dmg)
 				if battle_over:
@@ -214,8 +257,8 @@ func _on_card_used(card):
 			label.text = "エナジー回復: +%d" % card.power
 		"energy_burst":
 			player_energy += card.power
-			energy_penalty_next_turn = true
-			label.text = "覚醒！ エナジー +%d（次ターン-1）" % card.power
+			add_status("player", "weak", 1)
+			label.text = "覚醒！ エナジー +%d（脱力1付与）" % card.power
 		"draw":
 			draw_cards(card.power)
 			label.text = "ドロー！ %d枚引いた！" % card.power
@@ -223,6 +266,9 @@ func _on_card_used(card):
 			player_hp = min(player_hp + card.power, player_max_hp)
 			player_hp_bar.value = player_hp
 			label.text = "回復！ HP +%d" % card.power
+		"weak":
+			add_status("enemy", "weak", card.power)
+			label.text = "敵に脱力を%d付与！" % card.power
 
 	# グッズ効果: on_tagged_card（推しタグカード使用時）
 	_apply_goods_effects("on_tagged_card", card)
@@ -257,6 +303,7 @@ func is_player_turn() -> bool:
 func end_player_turn():
 	turn_state = TurnState.ENEMY_TURN
 	label.text = "ターン終了… 敵の行動中..."
+	decay_statuses("player")
 	_update_end_turn_button()
 	for card in card_container.get_children():
 		discard_pile.append(card.card_data)
@@ -266,8 +313,7 @@ func start_player_turn():
 	turn_state = TurnState.PLAYER_TURN
 	talent_used_this_turn = false
 	player_block = 0
-	player_energy = MAX_ENERGY - 1 if energy_penalty_next_turn else MAX_ENERGY
-	energy_penalty_next_turn = false
+	player_energy = MAX_ENERGY
 	decide_enemy_action()
 	draw_cards(3)
 
@@ -284,10 +330,7 @@ func play_enemy_turn():
 
 	match next_enemy_action.get("type", ""):
 		"attack":
-			var damage = next_enemy_action.power
-			if enemy_buff_active:
-				damage = int(damage * 1.5)
-				enemy_buff_active = false
+			var damage = calc_attack_damage(next_enemy_action.power, "enemy")
 			apply_damage(damage)
 			if battle_over or not is_inside_tree():
 				return
@@ -295,10 +338,7 @@ func play_enemy_turn():
 
 		"multi_attack":
 			var hits = next_enemy_action.get("times", 2)
-			var dmg = next_enemy_action.power
-			if enemy_buff_active:
-				dmg = int(dmg * 1.5)
-				enemy_buff_active = false
+			var dmg = calc_attack_damage(next_enemy_action.power, "enemy")
 			for i in range(hits):
 				await get_tree().create_timer(0.3).timeout
 				if battle_over or not is_inside_tree():
@@ -309,12 +349,12 @@ func play_enemy_turn():
 			label.text = "%sの連続攻撃！" % enemy_data.name
 
 		"buff":
-			enemy_buff_active = true
-			label.text = "%sは力を溜めている…次の攻撃が強化！" % enemy_data.name
+			add_status("enemy", "strength", 3)
+			label.text = "%sは力を溜めている…筋力+3！" % enemy_data.name
 
 		"debuff":
-			energy_penalty_next_turn = true
-			label.text = "%sの邪悪な気配… 次ターンのエナジーが減少！" % enemy_data.name
+			add_status("player", "weak", 1)
+			label.text = "%sの邪悪な気配… プレイヤーに脱力付与！" % enemy_data.name
 		"block":
 			var gain = next_enemy_action.get("power", 0)
 			enemy_block += gain
@@ -322,6 +362,7 @@ func play_enemy_turn():
 
 	if battle_over or not is_inside_tree():
 		return
+	decay_statuses("enemy")
 	update_ui()
 
 func apply_damage(amount):
