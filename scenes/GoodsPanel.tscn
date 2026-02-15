@@ -1,0 +1,27 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/GoodsPanel.gd" id="1_goods"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_goods"]
+bg_color = Color(0.1, 0.1, 0.15, 0.75)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+
+[node name="GoodsPanel" type="PanelContainer"]
+custom_minimum_size = Vector2(200, 0)
+theme_override_styles/panel = SubResource("StyleBoxFlat_goods")
+script = ExtResource("1_goods")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "🎁 グッズ"

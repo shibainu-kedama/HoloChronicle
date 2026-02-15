@@ -1,10 +1,11 @@
-[gd_scene load_steps=11 format=3 uid="uid://sid2ikfh1ui6"]
+[gd_scene load_steps=12 format=3 uid="uid://sid2ikfh1ui6"]
 
 [ext_resource type="Script" path="res://scripts/BattleScene.gd" id="1_maab4"]
 [ext_resource type="Texture2D" uid="uid://c5s4wp6tebjor" path="res://images/enemy_fubura.png" id="2_lysp6"]
 [ext_resource type="Texture2D" uid="uid://rthvji11akta" path="res://images/discardZone.png" id="3_2003n"]
 [ext_resource type="PackedScene" uid="uid://xwfxfbu6gmk4" path="res://scenes/DeckZone.tscn" id="4_mng8e"]
 [ext_resource type="PackedScene" uid="uid://t3n8o5bhk3nb" path="res://scenes/EnemyUI.tscn" id="4_ru16g"]
+[ext_resource type="PackedScene" path="res://scenes/GoodsPanel.tscn" id="6_goods"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gh3jm"]
 bg_color = Color(0, 0.784314, 0, 1)
@@ -167,6 +168,12 @@ offset_bottom = 225.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_lysp6")
+
+[node name="GoodsPanel" parent="." instance=ExtResource("6_goods")]
+layout_mode = 0
+offset_top = 120.0
+offset_right = 200.0
+offset_bottom = 120.0
 
 [connection signal="pressed" from="EndTurnButton" to="." method="_on_EndTurnButton_pressed"]
 [connection signal="pressed" from="TalentButton" to="." method="_on_TalentButton_pressed"]
