@@ -3,16 +3,24 @@ extends Control
 @onready var node_container = $ScrollContainer/ViewportContent/NodeContainer
 @onready var path_drawer = $ScrollContainer/ViewportContent/PathDrawer
 @onready var background = $ScrollContainer/ViewportContent/Background
+@onready var deck_button := $DeckViewButton
 
 func _ready():
 	load_node_types_from_csv("res://data/map_nodes.csv")
 	Global.node_links.clear()
 	load_paths_from_csv("res://data/map_paths.csv")
-	
+
 	# ← 最初の選択可能ノード
 	if Global.unlocked_nodes.is_empty():
 		Global.unlocked_nodes = ["1-A", "1-B", "1-C"]  # ←最初は全部開放
 	update_node_interactability()
+	deck_button.pressed.connect(_on_deck_view_pressed)
+
+func _on_deck_view_pressed():
+	var popup = preload("res://scenes/DeckPopup.tscn").instantiate()
+	add_child(popup)
+	popup.show_cards(Global.player_deck)
+	popup.visibility_changed.connect(func(): if not popup.visible: popup.queue_free())
 
 # ノード種別をCSVから読み込み、ランダムにセット
 func load_node_types_from_csv(path: String) -> void:
