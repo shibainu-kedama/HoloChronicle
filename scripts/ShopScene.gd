@@ -2,6 +2,7 @@ extends Control
 
 const CARD_PRICES = {0: 30, 1: 50, 2: 75}
 const UPGRADE_COST = 75
+const GOODS_PRICE = 100
 
 @onready var gold_label: Label = $VBoxContainer/Label_Gold
 @onready var btn_upgrade: Button = $VBoxContainer/Btn_Upgrade
@@ -13,6 +14,7 @@ const UPGRADE_COST = 75
 var shop_cards: Array[CardData] = []
 var card_nodes: Array = []
 var buy_buttons: Array[Button] = []
+var shop_goods: GoodsData = null
 
 func _ready() -> void:
 	# カード表示ノード取得
@@ -29,6 +31,7 @@ func _ready() -> void:
 	# ランダムに3枚抽選
 	shop_cards = _pick_shop_cards(3)
 	_setup_card_display()
+	_setup_goods_display()
 	_update_gold_label()
 	_update_upgrade_button()
 
@@ -72,6 +75,28 @@ func _setup_card_display() -> void:
 			if Global.player_gold < price:
 				buy_buttons[i].disabled = true
 
+func _setup_goods_display() -> void:
+	var label_goods_info = $VBoxContainer/Label_GoodsInfo
+	var btn_buy_goods = $VBoxContainer/Btn_BuyGoods
+
+	# 未所持グッズからランダム1つ選択
+	var owned_ids = Global.player_goods.map(func(g): return g.id)
+	var unowned = CardLoader.all_goods.filter(func(g): return g.id not in owned_ids)
+
+	if unowned.is_empty():
+		$VBoxContainer/HSeparator_Goods.visible = false
+		$VBoxContainer/Label_GoodsTitle.visible = false
+		label_goods_info.visible = false
+		btn_buy_goods.visible = false
+		return
+
+	unowned.shuffle()
+	shop_goods = unowned[0]
+	label_goods_info.text = "%s - %s" % [shop_goods.name, shop_goods.description]
+	btn_buy_goods.text = "購入（%dG）" % GOODS_PRICE
+	btn_buy_goods.disabled = Global.player_gold < GOODS_PRICE
+	btn_buy_goods.pressed.connect(_on_buy_goods)
+
 func _get_price(card: CardData) -> int:
 	return CARD_PRICES.get(card.cost, 50)
 
@@ -93,6 +118,22 @@ func _on_buy(index: int) -> void:
 	_update_buy_buttons()
 	_update_upgrade_button()
 
+func _on_buy_goods() -> void:
+	if shop_goods == null or Global.player_gold < GOODS_PRICE:
+		return
+
+	Global.player_gold -= GOODS_PRICE
+	Global.player_goods.append(shop_goods)
+	print("🎁 ショップ購入グッズ: %s" % shop_goods.name)
+
+	var btn_buy_goods = $VBoxContainer/Btn_BuyGoods
+	btn_buy_goods.disabled = true
+	btn_buy_goods.text = "売り切れ"
+
+	_update_gold_label()
+	_update_buy_buttons()
+	_update_upgrade_button()
+
 func _update_gold_label() -> void:
 	gold_label.text = "所持ゴールド: %d" % Global.player_gold
 
@@ -102,6 +143,11 @@ func _update_buy_buttons() -> void:
 			continue
 		var price = _get_price(shop_cards[i])
 		buy_buttons[i].disabled = Global.player_gold < price
+
+	# グッズボタンの更新
+	var btn_buy_goods = $VBoxContainer/Btn_BuyGoods
+	if btn_buy_goods.visible and btn_buy_goods.text != "売り切れ":
+		btn_buy_goods.disabled = Global.player_gold < GOODS_PRICE
 
 # === カード強化 ===
 

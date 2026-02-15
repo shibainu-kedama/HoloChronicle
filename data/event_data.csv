@@ -1,5 +1,5 @@
 id,title,image_path,body,choice1_text,choice1_result,choice1_next,choice1_condition,choice2_text,choice2_result,choice2_next,choice2_condition
 1,装備の山,res://images/enemy_fubura.png,装備が山のように積まれている。,拾う,,3,hp>=50,立ち去る,gold:-10,MAP,
-2,成功,res://images/enemy_fubura.png,優秀な装備を見つけた！,続ける,atk:+10,MAP,,,,,
+2,成功,res://images/enemy_fubura.png,優秀な装備を見つけた！,続ける,atk:+10;goods:mascot,MAP,,,,,
 3,罠発動,res://images/enemy_fubura.png,罠が発動した！,苦しむ,hp:-20,MAP,,,,,
 10,怪しい光,res://images/light.png,光がまばゆい…,戻る,,MAP,,,,,

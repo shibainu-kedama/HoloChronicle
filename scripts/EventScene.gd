@@ -63,8 +63,15 @@ func show_event(ev: EventData):
 func apply_result_and_continue(choice: Dictionary):
 	# 結果適用
 	for key in choice.result.keys():
-		player_stats[key] += choice.result[key]
-		print("player", key, "→", player_stats[key])
+		if key == "goods":
+			var goods_id = str(choice.result["goods"])
+			var goods = CardLoader.get_goods_by_id(goods_id)
+			if goods and not Global.player_goods.has(goods):
+				Global.player_goods.append(goods)
+				print("🎁 イベント報酬グッズ: %s" % goods.name)
+		else:
+			player_stats[key] += choice.result[key]
+			print("player", key, "→", player_stats[key])
 	_sync_stats_to_global()
 
 	var next_id = null

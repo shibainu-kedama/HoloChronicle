@@ -2,6 +2,7 @@ extends Control
 
 var card_buttons = []
 var reward_cards: Array[CardData] = []
+var reward_goods: GoodsData = null
 
 func _ready():
 	# HBoxContainer 内の CardButton ノードを自動収集（名前が "CardButton" で始まるノードのみ）
@@ -31,6 +32,10 @@ func _ready():
 	if skip_btn:
 		skip_btn.pressed.connect(_on_skip_pressed)
 
+	# グッズ報酬UIのボタン接続
+	$VBoxContainer/GoodsRewardPanel/Btn_GoodsAccept.pressed.connect(_on_goods_accept)
+	$VBoxContainer/GoodsRewardPanel/Btn_GoodsSkip.pressed.connect(_on_goods_skip)
+
 	# すでにロード済みのカードからランダムに最大3枚抽選
 	var offer_count = min(3, CardLoader.all_cards.size(), card_buttons.size())
 	reward_cards = pick_random_cards(CardLoader.all_cards, offer_count)
@@ -56,17 +61,53 @@ func _on_card_selected(btn: TextureButton):
 	if index == -1:
 		push_error("選択されたボタンが card_buttons に見つかりません")
 		return
-	
+
 	var selected_card = reward_cards[index]
 	print("選択されたカード: ", selected_card.name)
 
 	# プレイヤーデッキに追加（グローバル変数などに保存）
 	Global.player_deck.append(selected_card)
 
-	# 次のシーンへ遷移（マップ画面など）
-	get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
+	_try_goods_reward()
 
 func _on_skip_pressed():
+	_try_goods_reward()
+
+func _try_goods_reward():
+	# 未所持グッズプールから候補取得
+	var owned_ids = Global.player_goods.map(func(g): return g.id)
+	var unowned = CardLoader.all_goods.filter(func(g): return g.id not in owned_ids)
+
+	# プールが空 or 50%で不発 → マップへ
+	if unowned.is_empty() or randf() < 0.5:
+		get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
+		return
+
+	# ランダムに1つ選んでグッズ報酬UI表示
+	unowned.shuffle()
+	reward_goods = unowned[0]
+	_show_goods_reward(reward_goods)
+
+func _show_goods_reward(goods: GoodsData):
+	# カード報酬UIを非表示
+	$VBoxContainer/Label_Gold.visible = false
+	$VBoxContainer/Label.visible = false
+	$VBoxContainer/HBoxContainer.visible = false
+	$VBoxContainer/Btn_Skip.visible = false
+
+	# グッズ報酬UIを表示
+	var panel = $VBoxContainer/GoodsRewardPanel
+	panel.visible = true
+	$VBoxContainer/GoodsRewardPanel/Label_GoodsName.text = goods.name
+	$VBoxContainer/GoodsRewardPanel/Label_GoodsDesc.text = goods.description
+
+func _on_goods_accept():
+	if reward_goods:
+		Global.player_goods.append(reward_goods)
+		print("🎁 バトル報酬グッズ: %s" % reward_goods.name)
+	get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
+
+func _on_goods_skip():
 	get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
 
 func _calc_gold_reward() -> int:

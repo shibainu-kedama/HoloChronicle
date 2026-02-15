@@ -71,6 +71,26 @@ custom_minimum_size = Vector2(90, 35)
 layout_mode = 2
 text = "購入"
 
+[node name="HSeparator_Goods" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="Label_GoodsTitle" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "グッズ"
+horizontal_alignment = 1
+
+[node name="Label_GoodsInfo" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+
+[node name="Btn_BuyGoods" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 35)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "購入（100G）"
+
 [node name="Btn_Upgrade" type="Button" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2

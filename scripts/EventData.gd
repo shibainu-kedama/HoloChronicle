@@ -13,10 +13,14 @@ static func parse_result(text: String) -> Dictionary:
 		var kv = part.strip_edges().split(":")
 		if kv.size() == 2:
 			var val_str = kv[1].strip_edges()
-			# "+10" → "10" にして正しくint変換（符号付き対応）
-			if val_str.begins_with("+"):
-				val_str = val_str.substr(1)
-			result[kv[0]] = int(val_str)
+			# goodsキーは文字列のまま保持（グッズIDを参照するため）
+			if kv[0].strip_edges() == "goods":
+				result["goods"] = val_str
+			else:
+				# "+10" → "10" にして正しくint変換（符号付き対応）
+				if val_str.begins_with("+"):
+					val_str = val_str.substr(1)
+				result[kv[0]] = int(val_str)
 	return result
 
 static func from_csv_row(row: PackedStringArray) -> EventData:
