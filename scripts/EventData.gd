@@ -2,6 +2,7 @@
 class_name EventData
 
 var id: int
+var group: String = ""
 var title: String
 var image_path: String
 var body: String
@@ -26,11 +27,12 @@ static func parse_result(text: String) -> Dictionary:
 static func from_csv_row(row: PackedStringArray) -> EventData:
 	var ev = EventData.new()
 	ev.id = int(row[0])
-	ev.title = row[1]
-	ev.image_path = row[2]
-	ev.body = row[3]
+	ev.group = row[1].strip_edges()
+	ev.title = row[2]
+	ev.image_path = row[3]
+	ev.body = row[4]
 
-	var i = 4
+	var i = 5
 	while i + 3 < row.size():
 		var text = row[i].strip_edges()
 		if text != "":

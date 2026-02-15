@@ -25,11 +25,26 @@ func _ready():
 	else:
 		player_stats = {"hp": 100, "gold": 50, "atk": 0}
 
-	events = EventLoader.load_events("res://data/event_data.csv")
-	if events.is_empty():
+	var all_events = EventLoader.load_events("res://data/event_data.csv")
+	if all_events.is_empty():
 		push_error("イベントデータが空です")
 		return_to_map()
 		return
+
+	# グループ別に分類
+	var groups: Dictionary = {}
+	for ev in all_events:
+		if not groups.has(ev.group):
+			groups[ev.group] = []
+		groups[ev.group].append(ev)
+
+	# ランダムにグループ選択
+	var group_keys = groups.keys()
+	var selected_group = group_keys[randi() % group_keys.size()]
+	events = groups[selected_group]
+
+	# グループ内の最小IDイベントから開始
+	events.sort_custom(func(a, b): return a.id < b.id)
 	show_event(events[0])
 
 func show_event(ev: EventData):

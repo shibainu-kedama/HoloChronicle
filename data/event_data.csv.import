@@ -6,10 +6,10 @@ uid="uid://l33li4o6dcbx"
 
 [deps]
 
-files=["res://data/event_data.title.translation", "res://data/event_data.image.translation", "res://data/event_data.body.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice2.translation"]
+files=["res://data/event_data.group.translation", "res://data/event_data.title.translation", "res://data/event_data.image.translation", "res://data/event_data.body.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice3.translation", "res://data/event_data.choice3.translation", "res://data/event_data.choice3.translation", "res://data/event_data.choice3.translation"]
 
 source_file="res://data/event_data.csv"
-dest_files=["res://data/event_data.title.translation", "res://data/event_data.image.translation", "res://data/event_data.body.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice2.translation"]
+dest_files=["res://data/event_data.group.translation", "res://data/event_data.title.translation", "res://data/event_data.image.translation", "res://data/event_data.body.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice1.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice2.translation", "res://data/event_data.choice3.translation", "res://data/event_data.choice3.translation", "res://data/event_data.choice3.translation", "res://data/event_data.choice3.translation"]
 
 [params]
 
