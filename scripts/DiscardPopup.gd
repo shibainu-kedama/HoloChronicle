@@ -12,7 +12,7 @@ func _ready():
 
 	$CloseButton.pressed.connect(func(): hide())
 
-func show_discard(cards: Array) -> void:
+func show_discard(cards: Array[CardData]) -> void:
 	if card_list == null:
 		printerr("❌ card_list が null のままです。")
 		return

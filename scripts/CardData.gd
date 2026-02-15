@@ -9,7 +9,11 @@ var id: String = ""
 @export var cost: int
 @export var info: String
 @export var image_path: String
+@export var tags: PackedStringArray = []
 var upgraded: bool = false
+
+func has_tag(tag: String) -> bool:
+	return tag in tags
 
 func upgrade() -> void:
 	if upgraded:
@@ -35,4 +39,7 @@ static func from_dict(data: Dictionary) -> CardData:
 	card.cost = int(data.get("cost", "0"))
 	card.info = data.get("info", "")
 	card.image_path = data.get("image_path", "")
+	var tags_str: String = data.get("tags", "")
+	if tags_str != "":
+		card.tags = PackedStringArray(tags_str.split("|"))
 	return card

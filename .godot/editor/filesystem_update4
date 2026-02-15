@@ -8,3 +8,16 @@ res://scenes/CharacterSelectScene.tscn
 res://scenes/TitleScene.tscn
 res://scenes/CardButton.tscn
 res://scenes/CardSlot.tscn
+res://data/cards.name.translation
+res://data/cards.effect.translation
+res://data/cards.power.translation
+res://data/cards.cost.translation
+res://data/cards.info.translation
+res://data/cards.image.translation
+res://data/characters.name.translation
+res://data/characters.description.translation
+res://data/characters.hp.translation
+res://data/characters.gold.translation
+res://data/characters.talent.translation
+res://data/characters.image.translation
+res://data/starting_decks.card.translation

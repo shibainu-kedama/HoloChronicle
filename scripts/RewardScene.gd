@@ -89,8 +89,26 @@ func _get_stage_number() -> int:
 		return int(num_str)
 	return 1
 
-# ユーティリティ：ランダムにN枚選ぶ
-func pick_random_cards(array: Array, count: int) -> Array:
-	var shuffled = array.duplicate()
-	shuffled.shuffle()
-	return shuffled.slice(0, count)
+# 推しタグによる重み付きランダム抽選
+func pick_random_cards(array: Array[CardData], count: int) -> Array[CardData]:
+	var oshi_tag := ""
+	if Global.selected_character:
+		oshi_tag = Global.selected_character.tag
+
+	# 重み付きプールを構築（推しタグカードは3倍の出現率）
+	var weighted_pool: Array[CardData] = []
+	for card in array:
+		var weight := 3 if oshi_tag != "" and card.has_tag(oshi_tag) else 1
+		for i in range(weight):
+			weighted_pool.append(card)
+
+	weighted_pool.shuffle()
+
+	# 重複なしでcount枚選ぶ
+	var result: Array[CardData] = []
+	for card in weighted_pool:
+		if card not in result:
+			result.append(card)
+		if result.size() >= count:
+			break
+	return result

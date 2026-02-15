@@ -1,4 +1,4 @@
-id,name,description,hp,gold,talent_name,talent_desc,talent_icon_path,image_path
-lui,鷹嶺ルイ,【秘密結社holoX】の女幹部。,80,50,鷹の眼,ランダムな敵に3回攻撃（3ダメ×3）,res://images/icon_takanome.png,res://images/char_lui.png
-miko,さくらみこ,電脳桜神社の巫女。,60,100,エリート巫女ビーム,敵全体に6ダメージ（毎ターン1回）,res://images/icon_fanbeam.png,res://images/char_miko.png
-suisei,星街すいせい,歌とアイドルをこよなく愛するバーチャルアイドル。,70,75,スターダストブレイク,HP最大の敵に15ダメージ,res://images/icon_starshot.png,res://images/char_suisei.png
+id,name,description,hp,gold,talent_name,talent_desc,talent_icon_path,image_path,tag
+lui,鷹嶺ルイ,【秘密結社holoX】の女幹部。,80,50,鷹の眼,ランダムな敵に3回攻撃（3ダメ×3）,res://images/icon_takanome.png,res://images/char_lui.png,lui
+miko,さくらみこ,電脳桜神社の巫女。,60,100,エリート巫女ビーム,敵全体に6ダメージ（毎ターン1回）,res://images/icon_fanbeam.png,res://images/char_miko.png,miko
+suisei,星街すいせい,歌とアイドルをこよなく愛するバーチャルアイドル。,70,75,スターダストブレイク,HP最大の敵に15ダメージ,res://images/icon_starshot.png,res://images/char_suisei.png,suisei

@@ -2,7 +2,7 @@ extends Panel
 
 @onready var deck_count_label: Label = $DeckImage/DeckCountLabel
 @export var card_scene: PackedScene
-@export var deck_data: Array = []  # 外部からも編集可能に
+@export var deck_data: Array[CardData] = []  # 外部からも編集可能に
 
 # DeckPopup のプレハブをロード（パスに注意）
 @onready var deck_popup_scene: PackedScene = preload("res://scenes/DeckPopup.tscn")
@@ -15,8 +15,8 @@ func update_deck_count():
 	deck_count_label.text = str(deck_data.size())
 
 # デッキデータをコピーして保持
-func set_cards(new_deck_data: Array) -> void:
-	deck_data = new_deck_data.duplicate()  # データをコピーして保持
+func set_cards(new_deck_data: Array[CardData]) -> void:
+	deck_data = new_deck_data.duplicate() as Array[CardData]
 	print("✅ DeckZone: deck_data を受け取りました")
 
 # ポップアップでデッキを表示
@@ -41,4 +41,3 @@ func show_deck_popup() -> void:
 		popup.show_cards(deck_data)
 	else:
 		print("⚠️ DeckPopup に show_cards() が存在しません")
-

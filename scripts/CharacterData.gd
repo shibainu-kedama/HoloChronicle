@@ -12,6 +12,7 @@ class_name CharacterData
 @export var talent_name: String = ""
 @export var talent_desc: String = ""
 @export var talent_icon_path: String = ""  # タレントアイコン用
+@export var tag: String = ""               # 推しタグ（例: "miko", "suisei"）
 
 static func from_dict(d: Dictionary) -> CharacterData:
 	var c := CharacterData.new()
@@ -24,4 +25,5 @@ static func from_dict(d: Dictionary) -> CharacterData:
 	c.talent_name      = d.get("talent_name", "")
 	c.talent_desc      = d.get("talent_desc", "")
 	c.talent_icon_path = d.get("talent_icon_path", "")
+	c.tag              = d.get("tag", "")
 	return c

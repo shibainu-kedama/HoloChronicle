@@ -37,11 +37,26 @@ func _ready() -> void:
 	btn_cancel_upgrade.pressed.connect(_on_cancel_upgrade)
 
 func _pick_shop_cards(count: int) -> Array[CardData]:
-	var all = CardLoader.all_cards.duplicate()
-	all.shuffle()
+	var oshi_tag := ""
+	if Global.selected_character:
+		oshi_tag = Global.selected_character.tag
+
+	# 重み付きプール（推しタグカードは3倍の出現率）
+	var weighted_pool: Array[CardData] = []
+	for card in CardLoader.all_cards:
+		var weight := 3 if oshi_tag != "" and card.has_tag(oshi_tag) else 1
+		for i in range(weight):
+			weighted_pool.append(card)
+
+	weighted_pool.shuffle()
+
+	# 重複なしでcount枚選ぶ
 	var result: Array[CardData] = []
-	for i in range(min(count, all.size())):
-		result.append(all[i])
+	for card in weighted_pool:
+		if card not in result:
+			result.append(card)
+		if result.size() >= count:
+			break
 	return result
 
 func _setup_card_display() -> void:

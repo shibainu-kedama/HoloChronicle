@@ -1,11 +1,15 @@
-id,name,effect,power,cost,info,image_path
-zangeki,斬撃,attack,6,1,基本の攻撃,res://images/card_strike.png
-bougyo,防御,block,5,1,ブロックを得る,res://images/card_kiaraGuard.png
-kiai,気合い,energy,1,0,エナジーを1回復,res://images/card_fubura.png
-kyouda,強打,attack,12,2,強力な一撃,res://images/card_danchouMace.png
-renzoku,連撃,multi_attack,3,1,3回攻撃,res://images/card_strike.png
-teppeki,鉄壁,block,10,2,大量ブロック,res://images/card_kiaraGuard.png
-draw,ドロー,draw,2,1,カードを2枚引く,res://images/card_fubura.png
-kaifuku,回復,heal,5,1,HPを5回復,res://images/card_fubura.png
-sutemi,捨て身,self_attack,18,2,自分も5ダメージ,res://images/card_danchouMace.png
-kakusei,覚醒,energy_burst,2,0,エナジー+2 次ターン-1,res://images/card_fubura.png
+id,name,effect,power,cost,info,image_path,tags
+zangeki,斬撃,attack,6,1,基本の攻撃,res://images/card_strike.png,
+bougyo,防御,block,5,1,ブロックを得る,res://images/card_kiaraGuard.png,
+kiai,気合い,energy,1,0,エナジーを1回復,res://images/card_fubura.png,
+kyouda,強打,attack,12,2,強力な一撃,res://images/card_danchouMace.png,
+renzoku,連撃,multi_attack,3,1,3回攻撃,res://images/card_strike.png,
+teppeki,鉄壁,block,10,2,大量ブロック,res://images/card_kiaraGuard.png,
+draw,ドロー,draw,2,1,カードを2枚引く,res://images/card_fubura.png,
+kaifuku,回復,heal,5,1,HPを5回復,res://images/card_fubura.png,
+sutemi,捨て身,self_attack,18,2,自分も5ダメージ,res://images/card_danchouMace.png,
+kakusei,覚醒,energy_burst,2,0,エナジー+2 次ターン-1,res://images/card_fubura.png,
+nie,にぇ,attack,0,1,敵に「脱力」を1付与,res://images/card_fubura.png,miko
+elite_strike,エリートな一撃,attack,9,1,デバフ状態なら12ダメージ,res://images/card_strike.png,miko
+taka_renzan,鷹連斬,multi_attack,4,1,3回攻撃,res://images/card_strike.png,lui
+hosimati_slash,彗星キック,attack,14,2,高威力の一撃,res://images/card_danchouMace.png,suisei

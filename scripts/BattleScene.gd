@@ -44,7 +44,7 @@ var talent_used_this_turn := false
 func _ready():
 	print("バトル開始")
 	# キャラ選択シーンで設定されたデッキを受け取る
-	deck = Global.player_deck.duplicate()
+	deck = Global.player_deck.duplicate() as Array[CardData]
 	# デッキをシャッフルする
 	deck.shuffle()
 
@@ -148,7 +148,7 @@ func draw_cards(count):
 		card_container.add_child(card)
 
 func reshuffle_deck():
-	deck = discard_pile.duplicate()
+	deck = discard_pile.duplicate() as Array[CardData]
 	discard_pile.clear()
 	discard_label.text = str(discard_pile.size())
 	deck.shuffle()
