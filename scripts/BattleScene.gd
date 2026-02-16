@@ -220,6 +220,8 @@ func _format_statuses(statuses: Dictionary) -> String:
 				parts.append("脆弱%d" % val)
 			"strength":
 				parts.append("筋力+%d" % val)
+			"poison":
+				parts.append("毒%d" % val)
 	return " ".join(parts)
 
 func add_status(target: String, status: String, stacks: int, enemy_idx: int = -1) -> void:
@@ -252,7 +254,7 @@ func decay_statuses(target: String, enemy_idx: int = -1) -> void:
 
 	var to_remove: Array[String] = []
 	for key in dict:
-		if key == "strength":
+		if key == "strength" or key == "poison":
 			continue
 		dict[key] -= 1
 		if dict[key] <= 0:
@@ -320,6 +322,8 @@ func _on_card_used(card):
 			var base = card.power + Global.player_atk_bonus
 			if card.card_data.id == "elite_strike" and (get_status("enemy", "weak") > 0 or get_status("enemy", "vulnerable") > 0):
 				base = 12 + Global.player_atk_bonus
+			elif card.card_data.id == "suisei_axe" and get_status("enemy", "vulnerable") > 0:
+				base = card.power + 5 + Global.player_atk_bonus
 			var dealt = calc_attack_damage(base, "player")
 			label.text = "攻撃カード使用: %d ダメージ！" % dealt
 			apply_damage_to_enemy(dealt)
@@ -355,6 +359,34 @@ func _on_card_used(card):
 		"weak":
 			add_status("enemy", "weak", card.power)
 			label.text = "敵に脱力を%d付与！" % card.power
+		"aoe_attack":
+			var total_dmg = 0
+			for i in range(enemies.size()):
+				if enemies[i].hp > 0:
+					var dealt = calc_attack_damage(card.power + Global.player_atk_bonus, "player", -1, i)
+					apply_damage_to_enemy(dealt, i)
+					total_dmg += dealt
+					if battle_over:
+						break
+			label.text = "全体攻撃！ 合計%dダメージ！" % total_dmg
+		"vulnerable":
+			add_status("enemy", "vulnerable", card.power)
+			label.text = "敵に脆弱を%d付与！" % card.power
+		"poison":
+			add_status("enemy", "poison", card.power)
+			label.text = "敵に毒を%d付与！" % card.power
+		"aoe_poison":
+			for i in range(enemies.size()):
+				if enemies[i].hp > 0:
+					add_status("enemy", "poison", card.power, i)
+			label.text = "全敵に毒を%d付与！" % card.power
+		"block_draw":
+			player_block += card.power
+			draw_cards(1)
+			label.text = "ブロック +%d＋1枚ドロー！" % card.power
+		"strength":
+			add_status("player", "strength", card.power)
+			label.text = "筋力 +%d！" % card.power
 
 	_apply_goods_effects("on_tagged_card", card)
 	update_ui()
@@ -412,6 +444,8 @@ func start_player_turn():
 	player_block = 0
 	player_energy = MAX_ENERGY
 
+	_apply_poison_damage()
+
 	# 全生存敵のブロックリセット＆行動決定
 	for i in range(enemies.size()):
 		if enemies[i].hp > 0:
@@ -422,6 +456,34 @@ func start_player_turn():
 	_apply_goods_effects("turn_start", null)
 	update_ui()
 	label.text = "プレイヤーのターン！カードを選んでください"
+
+# === 毒ダメージ処理 ===
+
+func _apply_poison_damage():
+	for i in range(enemies.size()):
+		if enemies[i].hp <= 0:
+			continue
+		var stacks = enemies[i].statuses.get("poison", 0)
+		if stacks <= 0:
+			continue
+		# 毒ダメージはブロック無視でHP直接適用
+		enemies[i].hp = max(enemies[i].hp - stacks, 0)
+		enemy_uis[i].set_hp(enemies[i].hp)
+		show_popup_damage(stacks, i)
+		print("毒ダメージ: 敵%d に %d ダメージ" % [i, stacks])
+		# スタック1減少、0なら除去
+		stacks -= 1
+		if stacks <= 0:
+			enemies[i].statuses.erase("poison")
+		else:
+			enemies[i].statuses["poison"] = stacks
+		# 撃破判定
+		if enemies[i].hp <= 0:
+			enemy_slots[i].visible = false
+			_select_next_alive_target()
+			check_battle_result()
+			if battle_over:
+				return
 
 # === 敵行動決定 ===
 

@@ -28,6 +28,14 @@ func upgrade() -> void:
 			power += 1
 		"heal":
 			power += 3
+		"aoe_attack":
+			power += 3
+		"vulnerable", "poison", "aoe_poison":
+			power += 1
+		"block_draw":
+			power += 2
+		"strength":
+			power += 1
 	name = name + "+"
 
 static func from_dict(data: Dictionary) -> CardData:
