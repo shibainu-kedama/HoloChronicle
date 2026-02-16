@@ -16,7 +16,8 @@
       "Bash(gh auth status:*)",
       "Bash(git remote set-url:*)",
       "Bash(git -C /d/ClaudeProjects/HoloChronicle log --oneline -20)",
-      "Bash(git -C /d/ClaudeProjects/HoloChronicle log --all --oneline)"
+      "Bash(git -C /d/ClaudeProjects/HoloChronicle log --all --oneline)",
+      "Bash(wc:*)"
     ]
   }
 }

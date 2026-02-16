@@ -24,13 +24,9 @@ func _ready() -> void:
 	bgm_slider.value_changed.connect(_on_bgm_volume_changed)
 	se_slider.value_changed.connect(_on_se_volume_changed)
 
-	# 音量スライダー初期値をAudioServerから取得
-	var bgm_idx := AudioServer.get_bus_index("BGM")
-	if bgm_idx >= 0:
-		bgm_slider.value = AudioServer.get_bus_volume_db(bgm_idx)
-	var se_idx := AudioServer.get_bus_index("SE")
-	if se_idx >= 0:
-		se_slider.value = AudioServer.get_bus_volume_db(se_idx)
+	# 音量スライダー初期値をSettingsManagerから取得
+	bgm_slider.value = SettingsManager.get_bgm_volume()
+	se_slider.value = SettingsManager.get_se_volume()
 
 	# フォーカス設定（キーボード/ゲームパッド対応）
 	start_button.focus_neighbor_top = start_button.get_path()
@@ -85,11 +81,7 @@ func _on_quit_confirmed() -> void:
 	get_tree().quit()
 
 func _on_bgm_volume_changed(value: float) -> void:
-	var idx := AudioServer.get_bus_index("BGM")
-	if idx >= 0:
-		AudioServer.set_bus_volume_db(idx, value)
+	SettingsManager.set_bgm_volume(value)
 
 func _on_se_volume_changed(value: float) -> void:
-	var idx := AudioServer.get_bus_index("SE")
-	if idx >= 0:
-		AudioServer.set_bus_volume_db(idx, value)
+	SettingsManager.set_se_volume(value)
