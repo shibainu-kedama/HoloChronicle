@@ -133,6 +133,7 @@ func _on_confirm_pressed() -> void:
 
 	# 初期グッズ付与
 	Global.player_goods.clear()
+	Global.player_potions.clear()
 	if selected.starting_goods_id != "":
 		var goods = CardLoader.get_goods_by_id(selected.starting_goods_id)
 		if goods:

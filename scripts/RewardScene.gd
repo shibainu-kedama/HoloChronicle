@@ -3,6 +3,7 @@ extends Control
 var card_buttons = []
 var reward_cards: Array[CardData] = []
 var reward_goods: GoodsData = null
+var reward_potion: PotionData = null
 
 func _ready():
 	# HBoxContainer 内の CardButton ノードを自動収集（名前が "CardButton" で始まるノードのみ）
@@ -35,6 +36,10 @@ func _ready():
 	# グッズ報酬UIのボタン接続
 	$VBoxContainer/GoodsRewardPanel/Btn_GoodsAccept.pressed.connect(_on_goods_accept)
 	$VBoxContainer/GoodsRewardPanel/Btn_GoodsSkip.pressed.connect(_on_goods_skip)
+
+	# ポーション報酬UIのボタン接続
+	$VBoxContainer/PotionRewardPanel/Btn_PotionAccept.pressed.connect(_on_potion_accept)
+	$VBoxContainer/PotionRewardPanel/Btn_PotionSkip.pressed.connect(_on_potion_skip)
 
 	# すでにロード済みのカードからランダムに最大3枚抽選
 	var offer_count = min(3, CardLoader.all_cards.size(), card_buttons.size())
@@ -78,9 +83,9 @@ func _try_goods_reward():
 	var owned_ids = Global.player_goods.map(func(g): return g.id)
 	var unowned = CardLoader.all_goods.filter(func(g): return g.id not in owned_ids)
 
-	# プールが空 or 50%で不発 → マップへ
+	# プールが空 or 50%で不発 → ポーション報酬判定へ
 	if unowned.is_empty() or randf() < 0.5:
-		get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
+		_try_potion_reward()
 		return
 
 	# ランダムに1つ選んでグッズ報酬UI表示
@@ -105,9 +110,57 @@ func _on_goods_accept():
 	if reward_goods:
 		Global.player_goods.append(reward_goods)
 		print("🎁 バトル報酬グッズ: %s" % reward_goods.name)
-	get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
+	_try_potion_reward()
 
 func _on_goods_skip():
+	_try_potion_reward()
+
+# === ポーション報酬 ===
+
+func _try_potion_reward():
+	# 所持上限チェック
+	if Global.player_potions.size() >= Global.MAX_POTIONS:
+		get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
+		return
+
+	# 30%で不発 → マップへ
+	if randf() > 0.3:
+		get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
+		return
+
+	# 未所持ポーションからランダム1つ
+	var owned_ids = Global.player_potions.map(func(p): return p.id)
+	var unowned = CardLoader.all_potions.filter(func(p): return p.id not in owned_ids)
+
+	if unowned.is_empty():
+		get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
+		return
+
+	unowned.shuffle()
+	reward_potion = unowned[0]
+	_show_potion_reward(reward_potion)
+
+func _show_potion_reward(potion: PotionData):
+	# 他のUIを非表示
+	$VBoxContainer/Label_Gold.visible = false
+	$VBoxContainer/Label.visible = false
+	$VBoxContainer/HBoxContainer.visible = false
+	$VBoxContainer/Btn_Skip.visible = false
+	$VBoxContainer/GoodsRewardPanel.visible = false
+
+	# ポーション報酬UIを表示
+	var panel = $VBoxContainer/PotionRewardPanel
+	panel.visible = true
+	$VBoxContainer/PotionRewardPanel/Label_PotionName.text = potion.name
+	$VBoxContainer/PotionRewardPanel/Label_PotionDesc.text = potion.description
+
+func _on_potion_accept():
+	if reward_potion and Global.player_potions.size() < Global.MAX_POTIONS:
+		Global.player_potions.append(reward_potion)
+		print("🧪 バトル報酬ポーション: %s" % reward_potion.name)
+	get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
+
+func _on_potion_skip():
 	get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
 
 func _calc_gold_reward() -> int:

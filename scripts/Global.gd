@@ -16,6 +16,10 @@ var player_deck: Array[CardData] = []
 # プレイヤーのグッズ（パッシブ効果）
 var player_goods: Array[GoodsData] = []
 
+# プレイヤーのポーション（消耗品）
+const MAX_POTIONS = 3
+var player_potions: Array[PotionData] = []
+
 # 選択中のキャラ（CharacterDataに統一）
 var selected_character: CharacterData
 
@@ -86,6 +90,7 @@ func reset_run_state() -> void:
 
 	player_deck.clear()
 	player_goods.clear()
+	player_potions.clear()
 	selected_character = null
 
 	current_stage_type = StageType.BATTLE

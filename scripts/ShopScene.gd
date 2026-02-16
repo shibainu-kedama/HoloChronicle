@@ -15,6 +15,7 @@ var shop_cards: Array[CardData] = []
 var card_nodes: Array = []
 var buy_buttons: Array[Button] = []
 var shop_goods: GoodsData = null
+var shop_potion: PotionData = null
 
 func _ready() -> void:
 	# カード表示ノード取得
@@ -32,6 +33,7 @@ func _ready() -> void:
 	shop_cards = _pick_shop_cards(3)
 	_setup_card_display()
 	_setup_goods_display()
+	_setup_potion_display()
 	_update_gold_label()
 	_update_upgrade_button()
 
@@ -134,6 +136,56 @@ func _on_buy_goods() -> void:
 	_update_buy_buttons()
 	_update_upgrade_button()
 
+# === ポーション販売 ===
+
+func _setup_potion_display() -> void:
+	var label_potion_info = $VBoxContainer/Label_PotionInfo
+	var btn_buy_potion = $VBoxContainer/Btn_BuyPotion
+
+	# 所持上限チェック
+	if Global.player_potions.size() >= Global.MAX_POTIONS:
+		$VBoxContainer/HSeparator_Potions.visible = false
+		$VBoxContainer/Label_PotionTitle.visible = false
+		label_potion_info.visible = false
+		btn_buy_potion.visible = false
+		return
+
+	# 未所持ポーションからランダム1つ
+	var owned_ids = Global.player_potions.map(func(p): return p.id)
+	var unowned = CardLoader.all_potions.filter(func(p): return p.id not in owned_ids)
+
+	if unowned.is_empty():
+		$VBoxContainer/HSeparator_Potions.visible = false
+		$VBoxContainer/Label_PotionTitle.visible = false
+		label_potion_info.visible = false
+		btn_buy_potion.visible = false
+		return
+
+	unowned.shuffle()
+	shop_potion = unowned[0]
+	label_potion_info.text = "%s - %s" % [shop_potion.name, shop_potion.description]
+	btn_buy_potion.text = "購入（%dG）" % shop_potion.price
+	btn_buy_potion.disabled = Global.player_gold < shop_potion.price
+	btn_buy_potion.pressed.connect(_on_buy_potion)
+
+func _on_buy_potion() -> void:
+	if shop_potion == null or Global.player_gold < shop_potion.price:
+		return
+	if Global.player_potions.size() >= Global.MAX_POTIONS:
+		return
+
+	Global.player_gold -= shop_potion.price
+	Global.player_potions.append(shop_potion)
+	print("🧪 ショップ購入ポーション: %s" % shop_potion.name)
+
+	var btn_buy_potion = $VBoxContainer/Btn_BuyPotion
+	btn_buy_potion.disabled = true
+	btn_buy_potion.text = "売り切れ"
+
+	_update_gold_label()
+	_update_buy_buttons()
+	_update_upgrade_button()
+
 func _update_gold_label() -> void:
 	gold_label.text = "所持ゴールド: %d" % Global.player_gold
 
@@ -148,6 +200,11 @@ func _update_buy_buttons() -> void:
 	var btn_buy_goods = $VBoxContainer/Btn_BuyGoods
 	if btn_buy_goods.visible and btn_buy_goods.text != "売り切れ":
 		btn_buy_goods.disabled = Global.player_gold < GOODS_PRICE
+
+	# ポーションボタンの更新
+	var btn_buy_potion = $VBoxContainer/Btn_BuyPotion
+	if btn_buy_potion.visible and btn_buy_potion.text != "売り切れ" and shop_potion:
+		btn_buy_potion.disabled = Global.player_gold < shop_potion.price
 
 # === カード強化 ===
 

@@ -14,6 +14,11 @@ extends Control
 @onready var enemy_container = $EnemyContainer
 @onready var end_turn_button = $EndTurnButton
 @onready var talent_button = $TalentButton
+@onready var potion_buttons: Array[Button] = [
+	$PotionContainer/PotionBtn0,
+	$PotionContainer/PotionBtn1,
+	$PotionContainer/PotionBtn2,
+]
 
 # 敵スロットUI参照（最大3体）
 @onready var enemy_slots: Array = [
@@ -80,6 +85,7 @@ func _ready():
 		talent_button.text = Global.selected_character.talent_name
 
 	setup_buttons()
+	_setup_potion_buttons()
 	start_player_turn()
 	_apply_goods_effects("battle_start", null)
 	update_ui()
@@ -204,6 +210,7 @@ func update_ui():
 		player_status_label.text = _format_statuses(player_statuses)
 	_update_end_turn_button()
 	_update_talent_button()
+	_update_potion_buttons()
 
 # === ステータス効果システム ===
 
@@ -720,3 +727,64 @@ func _apply_goods_effects(trigger: String, card) -> void:
 			"gold":
 				Global.player_gold += goods.value
 				print("🎁 グッズ[%s]: ゴールド +%d" % [goods.name, goods.value])
+
+# === ポーション（消耗品） ===
+
+func _setup_potion_buttons():
+	for i in range(potion_buttons.size()):
+		if i < Global.player_potions.size():
+			var potion = Global.player_potions[i]
+			potion_buttons[i].text = potion.name
+			potion_buttons[i].tooltip_text = potion.description
+			potion_buttons[i].visible = true
+			potion_buttons[i].pressed.connect(_on_potion_used.bind(i))
+		else:
+			potion_buttons[i].visible = false
+
+func _on_potion_used(index: int):
+	if not is_player_turn() or battle_over:
+		return
+	if index >= Global.player_potions.size():
+		return
+
+	var potion = Global.player_potions[index]
+
+	match potion.effect:
+		"heal":
+			player_hp = min(player_hp + potion.value, player_max_hp)
+			player_hp_bar.value = player_hp
+			label.text = "%s使用！ HP +%d" % [potion.name, potion.value]
+		"energy":
+			player_energy += potion.value
+			label.text = "%s使用！ エナジー +%d" % [potion.name, potion.value]
+		"strength":
+			add_status("player", "strength", potion.value)
+			label.text = "%s使用！ 筋力 +%d" % [potion.name, potion.value]
+		"aoe_poison":
+			for i in range(enemies.size()):
+				if enemies[i].hp > 0:
+					add_status("enemy", "poison", potion.value, i)
+			label.text = "%s使用！ 全敵に毒%d付与！" % [potion.name, potion.value]
+
+	Global.player_potions.remove_at(index)
+	print("🧪 ポーション使用: %s" % potion.name)
+
+	# ボタン再構築（インデックスがずれるので全リセット）
+	for btn in potion_buttons:
+		# 全接続を解除
+		for conn in btn.pressed.get_connections():
+			btn.pressed.disconnect(conn.callable)
+		btn.visible = false
+	for i in range(Global.player_potions.size()):
+		var p = Global.player_potions[i]
+		potion_buttons[i].text = p.name
+		potion_buttons[i].tooltip_text = p.description
+		potion_buttons[i].visible = true
+		potion_buttons[i].pressed.connect(_on_potion_used.bind(i))
+
+	update_ui()
+
+func _update_potion_buttons():
+	for i in range(potion_buttons.size()):
+		if potion_buttons[i].visible:
+			potion_buttons[i].disabled = not is_player_turn() or battle_over

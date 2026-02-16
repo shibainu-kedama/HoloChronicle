@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bgjifakp525q6"
+
+[deps]
+
+files=["res://data/potions.name.translation", "res://data/potions.effect.translation", "res://data/potions.value.translation", "res://data/potions.price.translation", "res://data/potions.description.translation"]
+
+source_file="res://data/potions.csv"
+dest_files=["res://data/potions.name.translation", "res://data/potions.effect.translation", "res://data/potions.value.translation", "res://data/potions.price.translation", "res://data/potions.description.translation"]
+
+[params]
+
+compress=true
+delimiter=0

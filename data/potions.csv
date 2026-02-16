@@ -1,0 +1,5 @@
+id,name,effect,value,price,description
+hp_potion,HPポーション,heal,20,40,HPを20回復
+energy_potion,エナジーポーション,energy,2,40,エナジーを2回復
+strength_potion,筋力ポーション,strength,3,50,筋力+3を得る
+poison_vial,毒瓶,aoe_poison,5,50,全敵に毒5付与
