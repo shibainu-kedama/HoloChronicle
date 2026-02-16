@@ -12,7 +12,7 @@ grow_vertical = 2
 script = ExtResource("1_go")
 
 [node name="Panel" type="Panel" parent="."]
-custom_minimum_size = Vector2(520, 380)
+custom_minimum_size = Vector2(520, 420)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -65,6 +65,13 @@ horizontal_alignment = 1
 [node name="Label_Gold" type="Label" parent="Panel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
+text = ""
+horizontal_alignment = 1
+
+[node name="Label_Stats" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 text = ""
 horizontal_alignment = 1
 

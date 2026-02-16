@@ -12,7 +12,7 @@ grow_vertical = 2
 script = ExtResource("1_segxt")
 
 [node name="Panel" type="Panel" parent="."]
-custom_minimum_size = Vector2(520, 320)
+custom_minimum_size = Vector2(520, 450)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -47,6 +47,32 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
 text = "おめでとうございます！"
+horizontal_alignment = 1
+
+[node name="Label_Character" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+
+[node name="Label_Stage" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+
+[node name="Label_Deck" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+
+[node name="Label_Gold" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+
+[node name="Label_Stats" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
 
 [node name="BtnTitle" type="Button" parent="Panel/VBox"]

@@ -6,10 +6,14 @@ extends Control
 @onready var label_deck: Label = $Panel/VBox/Label_Deck
 @onready var label_gold: Label = $Panel/VBox/Label_Gold
 @onready var btn_title: Button = $Panel/VBox/BtnTitle
+@onready var label_stats: Label = $Panel/VBox/Label_Stats
 
 const TITLE_SCENE_PATH := "res://scenes/TitleScene.tscn"
 
 func _ready() -> void:
+	# 敗北記録
+	RunHistory.record_run("defeat")
+
 	# 結果表示（リセット前のGlobal情報を使う）
 	var char_name = ""
 	if Global.selected_character:
@@ -23,6 +27,10 @@ func _ready() -> void:
 
 	var gold = Global.player_gold if Global.player_gold >= 0 else 0
 	label_gold.text = "所持ゴールド: %d" % gold
+
+	# 累計統計
+	var stats := RunHistory.get_stats()
+	label_stats.text = "総プレイ回数: %d / クリア回数: %d" % [stats.total_runs, stats.total_clears]
 
 	btn_title.pressed.connect(_on_btn_title)
 
