@@ -28,6 +28,8 @@ func set_type(t: String) -> void:
 			icon_texture.texture = preload("res://icons/icon_boss.png")
 		"shop":
 			icon_texture.texture = preload("res://icons/icon_treasure.png")
+		"elite":
+			icon_texture.texture = preload("res://icons/icon_elite.png")
 		_:
 			icon_texture.texture = null  # 未定義時は非表示またはデフォルト
 
@@ -66,12 +68,13 @@ func _on_pressed():
 	Global.set_stage_type_from_string(node_type)
 	Global.current_node_id = name
 
-	# battle/bossの場合、階層に応じた敵をセット
+	# battle/boss/eliteの場合、階層に応じた敵をセット
 	match node_type:
-		"battle", "boss":
+		"battle", "boss", "elite":
 			var stage = _get_stage_number()
 			var is_boss = node_type == "boss"
-			var enemy = EnemyLoader.get_random_enemy_for_stage(stage, is_boss)
+			var is_elite = node_type == "elite"
+			var enemy = EnemyLoader.get_random_enemy_for_stage(stage, is_boss, is_elite)
 			if enemy:
 				Global.current_enemy_id = enemy.id
 			else:
@@ -86,6 +89,8 @@ func _on_pressed():
 		"event":
 			get_tree().change_scene_to_file("res://scenes/EventScene.tscn")
 		"boss":
+			get_tree().change_scene_to_file("res://scenes/BattleScene.tscn")
+		"elite":
 			get_tree().change_scene_to_file("res://scenes/BattleScene.tscn")
 		"shop":
 			get_tree().change_scene_to_file("res://scenes/ShopScene.tscn")

@@ -83,8 +83,9 @@ func _try_goods_reward():
 	var owned_ids = Global.player_goods.map(func(g): return g.id)
 	var unowned = CardLoader.all_goods.filter(func(g): return g.id not in owned_ids)
 
-	# プールが空 or 50%で不発 → ポーション報酬判定へ
-	if unowned.is_empty() or randf() < 0.5:
+	# プールが空 → ポーション報酬判定へ
+	# エリート勝利時はグッズ確定、通常は50%で不発
+	if unowned.is_empty() or (not Global.is_elite_stage() and randf() < 0.5):
 		_try_potion_reward()
 		return
 
@@ -123,8 +124,9 @@ func _try_potion_reward():
 		get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
 		return
 
-	# 30%で不発 → マップへ
-	if randf() > 0.3:
+	# エリート勝利時は60%、通常は30%でドロップ
+	var potion_chance = 0.6 if Global.is_elite_stage() else 0.3
+	if randf() > potion_chance:
 		get_tree().change_scene_to_file("res://scenes/MapScene.tscn")
 		return
 
@@ -165,11 +167,15 @@ func _on_potion_skip():
 
 func _calc_gold_reward() -> int:
 	var stage = _get_stage_number()
+	var base: int
 	match stage:
-		1: return randi_range(15, 25)
-		2: return randi_range(20, 30)
-		3: return randi_range(25, 35)
-		_: return randi_range(15, 25)
+		1: base = randi_range(15, 25)
+		2: base = randi_range(20, 30)
+		3: base = randi_range(25, 35)
+		_: base = randi_range(15, 25)
+	if Global.is_elite_stage():
+		base = int(base * 1.5)
+	return base
 
 func _get_stage_number() -> int:
 	var node_id = Global.current_node_id

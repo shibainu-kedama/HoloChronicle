@@ -1,7 +1,7 @@
 extends Node
 
 # === 追加: ステージ種別 ===
-enum StageType { BATTLE, REST, EVENT, BOSS, SHOP }
+enum StageType { BATTLE, REST, EVENT, BOSS, SHOP, ELITE }
 var current_stage_type: int = StageType.BATTLE
 
 # プレイヤーHP（-1 = 未初期化）
@@ -72,12 +72,18 @@ func set_stage_type_from_string(t: String) -> void:
 			current_stage_type = StageType.BOSS
 		"shop":
 			current_stage_type = StageType.SHOP
+		"elite":
+			current_stage_type = StageType.ELITE
 		_:
 			current_stage_type = StageType.BATTLE
 
 
 func is_boss_stage() -> bool:
 	return current_stage_type == StageType.BOSS
+
+
+func is_elite_stage() -> bool:
+	return current_stage_type == StageType.ELITE
 
 
 func reset_run_state() -> void:

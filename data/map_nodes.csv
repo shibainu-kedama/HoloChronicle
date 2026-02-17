@@ -8,11 +8,11 @@ id,type1,type2,type3
 3-A,event,battle,shop
 3-B,rest,rest,rest
 3-C,battle,battle,event
-4-A,battle,battle,battle
+4-A,elite,elite,elite
 4-B,rest,shop,rest
 5-A,battle,battle,event
 5-B,battle,battle,battle
 5-C,shop,event,rest
-6-A,battle,battle,battle
+6-A,battle,elite,elite
 6-B,rest,rest,event
 7-A,boss,boss,boss

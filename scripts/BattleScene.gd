@@ -98,7 +98,8 @@ func _setup_enemies():
 	if enemy_data == null:
 		var stage = _get_current_stage_number()
 		var is_boss = Global.is_boss_stage()
-		enemy_data = EnemyLoader.get_random_enemy_for_stage(stage, is_boss)
+		var is_elite = Global.is_elite_stage()
+		enemy_data = EnemyLoader.get_random_enemy_for_stage(stage, is_boss, is_elite)
 
 	if enemy_data == null:
 		push_error("敵データが見つかりません。デフォルト敵を使用します。")

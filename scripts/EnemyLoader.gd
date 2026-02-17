@@ -17,7 +17,7 @@ func load_enemies_from_csv(path: String) -> void:
 		if line == "":
 			continue
 		var cols = line.split(",")
-		if cols.size() < 7:
+		if cols.size() < 8:
 			continue
 
 		var enemy = EnemyData.new()
@@ -26,10 +26,11 @@ func load_enemies_from_csv(path: String) -> void:
 		enemy.hp = int(cols[2])
 		enemy.stage = int(cols[3])
 		enemy.is_boss = cols[4].strip_edges().to_lower() == "true"
-		enemy.image_path = cols[5]
-		enemy.actions = _parse_actions(cols[6])
-		if cols.size() >= 8:
-			enemy.count = int(cols[7])
+		enemy.is_elite = cols[5].strip_edges().to_lower() == "true"
+		enemy.image_path = cols[6]
+		enemy.actions = _parse_actions(cols[7])
+		if cols.size() >= 9:
+			enemy.count = int(cols[8])
 		all_enemies.append(enemy)
 
 func _parse_actions(actions_str: String) -> Array:
@@ -59,15 +60,15 @@ func get_enemy_by_id(id: String) -> EnemyData:
 	push_error("敵ID '%s' が見つかりません" % id)
 	return null
 
-func get_random_enemy_for_stage(stage: int, is_boss: bool = false) -> EnemyData:
+func get_random_enemy_for_stage(stage: int, is_boss: bool = false, is_elite: bool = false) -> EnemyData:
 	var candidates: Array[EnemyData] = []
 	for enemy in all_enemies:
-		if enemy.is_boss == is_boss and enemy.stage == stage:
+		if enemy.is_boss == is_boss and enemy.is_elite == is_elite and enemy.stage == stage:
 			candidates.append(enemy)
 	# 該当stageの敵がなければ、最も近いstageの敵を返す
 	if candidates.is_empty():
 		for enemy in all_enemies:
-			if enemy.is_boss == is_boss:
+			if enemy.is_boss == is_boss and enemy.is_elite == is_elite:
 				candidates.append(enemy)
 	if candidates.is_empty():
 		return null
