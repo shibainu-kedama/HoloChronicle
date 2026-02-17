@@ -21,6 +21,18 @@ func _ready():
 		print("カードボタンが3つ未満です。シーン構成を確認してください。")
 		return
 
+	# エリート勝利時30%で呪いカード付与
+	var curse_label = $VBoxContainer/Label
+	if Global.is_elite_stage() and randf() < 0.3:
+		var curse_ids = ["curse_pain", "curse_decay", "curse_heavy"]
+		var curse_id = curse_ids[randi() % curse_ids.size()]
+		var curse_card = CardLoader.get_card_by_id(curse_id)
+		if curse_card:
+			Global.player_deck.append(curse_card)
+			curse_label.text = "呪いカード『%s』がデッキに加わった…" % curse_card.name
+			curse_label.add_theme_color_override("font_color", Color(0.7, 0.1, 0.5))
+			print("💀 エリート戦呪い付与: %s" % curse_card.name)
+
 	# ゴールド獲得
 	var gold_reward = _calc_gold_reward()
 	Global.player_gold += gold_reward
@@ -195,9 +207,11 @@ func pick_random_cards(array: Array[CardData], count: int) -> Array[CardData]:
 	if Global.selected_character:
 		oshi_tag = Global.selected_character.tag
 
-	# 重み付きプールを構築（推しタグカードは3倍の出現率）
+	# 重み付きプールを構築（推しタグカードは3倍の出現率、呪いカードは除外）
 	var weighted_pool: Array[CardData] = []
 	for card in array:
+		if card.is_curse():
+			continue
 		var weight := 3 if oshi_tag != "" and card.has_tag(oshi_tag) else 1
 		for i in range(weight):
 			weighted_pool.append(card)

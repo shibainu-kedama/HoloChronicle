@@ -46,9 +46,11 @@ func _pick_shop_cards(count: int) -> Array[CardData]:
 	if Global.selected_character:
 		oshi_tag = Global.selected_character.tag
 
-	# 重み付きプール（推しタグカードは3倍の出現率）
+	# 重み付きプール（推しタグカードは3倍の出現率、呪いカードは除外）
 	var weighted_pool: Array[CardData] = []
 	for card in CardLoader.all_cards:
+		if card.is_curse():
+			continue
 		var weight := 3 if oshi_tag != "" and card.has_tag(oshi_tag) else 1
 		for i in range(weight):
 			weighted_pool.append(card)

@@ -461,6 +461,7 @@ func start_player_turn():
 			decide_enemy_action(i)
 
 	draw_cards(3)
+	_apply_curse_damage()
 	_apply_goods_effects("turn_start", null)
 	update_ui()
 	label.text = "プレイヤーのターン！カードを選んでください"
@@ -489,6 +490,19 @@ func _apply_poison_damage():
 		if enemies[i].hp <= 0:
 			enemy_slots[i].visible = false
 			_select_next_alive_target()
+			check_battle_result()
+			if battle_over:
+				return
+
+# === 呪いカードダメージ処理 ===
+
+func _apply_curse_damage():
+	for card_btn in card_container.get_children():
+		if card_btn.card_data and card_btn.card_data.effect == "curse_damage":
+			var dmg = card_btn.card_data.power
+			player_hp = max(player_hp - dmg, 0)
+			player_hp_bar.value = player_hp
+			print("呪いダメージ: %s から %d ダメージ" % [card_btn.card_data.name, dmg])
 			check_battle_result()
 			if battle_over:
 				return

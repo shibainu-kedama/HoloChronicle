@@ -27,3 +27,6 @@ taka_dive,鷹の急降下,self_attack,22,2,22ダメージ 自分5ダメージ,re
 taka_me,鷹の目利き,draw,3,1,カードを3枚引く,res://images/card_fubura.png,lui
 suisei_axe,星街アクス,attack,10,1,脆弱敵に+5ダメージ,res://images/card_strike.png,suisei
 suisei_comet,コメットレイン,aoe_attack,6,2,全体に6ダメージ,res://images/card_strike.png,suisei
+curse_pain,苦痛,curse,0,99,呪い。使用不可。手札を圧迫する。,res://images/card_strike.png,curse
+curse_decay,衰弱の呪い,curse_damage,3,99,呪い。使用不可。ターン開始時3ダメージを受ける。,res://images/card_strike.png,curse
+curse_heavy,重荷,curse,0,99,呪い。使用不可。手札を圧迫する。,res://images/card_strike.png,curse

@@ -15,6 +15,9 @@ var upgraded: bool = false
 func has_tag(tag: String) -> bool:
 	return tag in tags
 
+func is_curse() -> bool:
+	return has_tag("curse")
+
 func upgrade() -> void:
 	if upgraded:
 		return

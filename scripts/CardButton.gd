@@ -40,6 +40,12 @@ func update_card_display(data: CardData) -> void:
 	$VBoxContainer/HBox_Cost/Label_Cost.text = str(card_data.cost)
 	$VBoxContainer/Label_Info.text = card_data.info
 	$CardTexture.texture = load(card_data.image_path)
+
+	# 呪いカードは名前を赤紫色に変更
+	if card_data.is_curse():
+		$VBoxContainer/Label_Name.add_theme_color_override("font_color", Color(0.7, 0.1, 0.5))
+	else:
+		$VBoxContainer/Label_Name.remove_theme_color_override("font_color")
 	
 # ================= Hover/Pop FX (for BaseButton/TextureButton) =================
 @export var hoverfx_scale: float = 1.50            # ホバー時の拡大倍率

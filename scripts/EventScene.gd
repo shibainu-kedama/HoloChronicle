@@ -84,6 +84,12 @@ func apply_result_and_continue(choice: Dictionary):
 			if goods and not Global.player_goods.has(goods):
 				Global.player_goods.append(goods)
 				print("🎁 イベント報酬グッズ: %s" % goods.name)
+		elif key == "curse":
+			var curse_id = str(choice.result["curse"])
+			var curse_card = CardLoader.get_card_by_id(curse_id)
+			if curse_card:
+				Global.player_deck.append(curse_card)
+				print("💀 呪いカード付与: %s" % curse_card.name)
 		else:
 			player_stats[key] += choice.result[key]
 			print("player", key, "→", player_stats[key])
