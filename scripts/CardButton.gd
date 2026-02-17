@@ -66,11 +66,20 @@ func update_card_display(data: CardData) -> void:
 		$VBoxContainer/Label_Name.add_theme_color_override("font_color", Color(0.7, 0.1, 0.5))
 	else:
 		$VBoxContainer/Label_Name.remove_theme_color_override("font_color")
-
 	# ツールチップ構築
 	var tip := "%s\nコスト: %d / 威力: %d" % [card_data.name, card_data.cost, card_data.power]
+	# キーワード（カードタグ）
+	var tags_text := ""
+	for i in range(card_data.tags.size()):
+		if i > 0:
+			tags_text += ", "
+		tags_text += card_data.tags[i]
+	if tags_text != "":
+		tip += "\nキーワード: " + tags_text
+	# カード説明
 	if card_data.info != "":
 		tip += "\n" + card_data.info
+	# 効果種別の説明
 	var desc = EFFECT_DESCRIPTIONS.get(card_data.effect, "")
 	if desc != "":
 		tip += "\n\n【%s】" % desc
