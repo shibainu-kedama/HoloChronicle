@@ -1,6 +1,13 @@
 extends Control
 class_name EnemyUI
 
+const STATUS_DESCRIPTIONS := {
+	"weak": "脱力：与ダメージが25%減少",
+	"vulnerable": "脆弱：被ダメージが50%増加",
+	"strength": "筋力：攻撃ダメージが増加",
+	"poison": "毒：ターン開始時にスタック分ダメージ（1ずつ減少）",
+}
+
 @onready var enemy_hp_bar = $VBoxContainer/EnemyHPBar
 @onready var enemy_hp_label = $VBoxContainer/EnemyHPLabel
 @onready var intent_label = $VBoxContainer/EnemyIntentLabel
@@ -46,9 +53,19 @@ func set_intent(intent: Dictionary) -> void:
 
 	intent_label.text = text
 
+func _ready() -> void:
+	if status_label:
+		status_label.mouse_filter = Control.MOUSE_FILTER_STOP
+
 func set_statuses(statuses: Dictionary) -> void:
 	if status_label:
 		status_label.text = format_statuses(statuses)
+		# ステータスツールチップ構築
+		var tip_parts: Array[String] = []
+		for key in statuses:
+			if statuses[key] > 0 and STATUS_DESCRIPTIONS.has(key):
+				tip_parts.append(STATUS_DESCRIPTIONS[key])
+		status_label.tooltip_text = "\n".join(tip_parts)
 
 static func format_statuses(statuses: Dictionary) -> String:
 	var parts: Array[String] = []

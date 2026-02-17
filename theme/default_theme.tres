@@ -1,0 +1,17 @@
+[gd_resource type="Theme" format=3]
+
+[sub_resource type="StyleBoxFlat" id="tooltip_panel"]
+bg_color = Color(0.1, 0.1, 0.15, 0.92)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+
+[resource]
+TooltipPanel/styles/panel = SubResource("tooltip_panel")
+TooltipLabel/font_sizes/font_size = 14
+TooltipLabel/colors/font_color = Color(1, 1, 1, 1)

@@ -37,6 +37,13 @@ extends Control
 	$EnemyContainer/EnemySlot2/EnemyUI2,
 ]
 
+const STATUS_DESCRIPTIONS := {
+	"weak": "脱力：与ダメージが25%減少",
+	"vulnerable": "脆弱：被ダメージが50%増加",
+	"strength": "筋力：攻撃ダメージが増加",
+	"poison": "毒：ターン開始時にスタック分ダメージ（1ずつ減少）",
+}
+
 const MAX_ENERGY = 3
 const MAX_HAND_SIZE = 10
 const MAX_ENEMIES = 3
@@ -83,6 +90,9 @@ func _ready():
 
 	if Global.selected_character and talent_button:
 		talent_button.text = Global.selected_character.talent_name
+
+	if player_status_label:
+		player_status_label.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	setup_buttons()
 	_setup_potion_buttons()
@@ -209,6 +219,12 @@ func update_ui():
 	# プレイヤーステータス
 	if player_status_label:
 		player_status_label.text = _format_statuses(player_statuses)
+		# ステータスツールチップ構築
+		var tip_parts: Array[String] = []
+		for key in player_statuses:
+			if player_statuses[key] > 0 and STATUS_DESCRIPTIONS.has(key):
+				tip_parts.append(STATUS_DESCRIPTIONS[key])
+		player_status_label.tooltip_text = "\n".join(tip_parts)
 	_update_end_turn_button()
 	_update_talent_button()
 	_update_potion_buttons()

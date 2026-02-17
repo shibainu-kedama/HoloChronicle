@@ -24,3 +24,7 @@ EnemyLoader="*res://scripts/EnemyLoader.gd"
 FadeLayer="*res://scenes/FadeLayer.tscn"
 SettingsManager="*res://scripts/SettingsManager.gd"
 RunHistory="*res://scripts/RunHistory.gd"
+
+[gui]
+
+theme/custom="res://theme/default_theme.tres"
