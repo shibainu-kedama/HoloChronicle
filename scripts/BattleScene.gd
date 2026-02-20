@@ -103,6 +103,7 @@ func _ready():
 	start_player_turn()
 	_apply_goods_effects("battle_start", null)
 	update_ui()
+	AudioManager.play_bgm("res://audio/bgm_battle.ogg")
 
 func _setup_enemies():
 	# 敵データ取得
@@ -308,6 +309,8 @@ func _update_end_turn_button():
 
 func draw_cards(count):
 	print("draw_cards", str(deck.size()))
+	if count > 0:
+		AudioManager.play_se("card_draw_turn")
 	for i in range(count):
 		if card_container.get_child_count() >= MAX_HAND_SIZE:
 			return
@@ -377,6 +380,7 @@ func _on_card_used(card):
 			label.text = "連撃！ %d×3 ダメージ！" % hit_dmg
 		"block":
 			player_block += card.power
+			AudioManager.play_se("block")
 			label.text = "防御カード使用: ブロック +%d" % card.power
 		"energy":
 			player_energy = min(player_energy + card.power, MAX_ENERGY)
@@ -391,6 +395,7 @@ func _on_card_used(card):
 		"heal":
 			player_hp = min(player_hp + card.power, player_max_hp)
 			player_hp_bar.value = player_hp
+			AudioManager.play_se("heal")
 			label.text = "回復！ HP +%d" % card.power
 		"weak":
 			add_status("enemy", "weak", card.power)
@@ -418,6 +423,7 @@ func _on_card_used(card):
 			label.text = "全敵に毒を%d付与！" % card.power
 		"block_draw":
 			player_block += card.power
+			AudioManager.play_se("block")
 			draw_cards(1)
 			label.text = "ブロック +%d＋1枚ドロー！" % card.power
 		"strength":
@@ -446,11 +452,13 @@ func apply_damage_to_enemy(amount: int, index: int = -1):
 	if actual > 0 and idx < enemy_images.size():
 		_flash_enemy(idx)
 		_spawn_hit_effect(enemy_images[idx].global_position + enemy_images[idx].size * 0.5)
+		AudioManager.play_se("hit_enemy")
 
 	if e.hp <= 0:
 		# 撃破 → スロット非表示化
 		enemy_slots[idx].visible = false
 		_select_next_alive_target()
+		AudioManager.play_se("enemy_die")
 
 	check_battle_result()
 
@@ -475,6 +483,7 @@ func _can_act() -> bool:
 
 func end_player_turn():
 	turn_state = TurnState.ENEMY_TURN
+	AudioManager.play_se("turn_end")
 	label.text = "ターン終了… 敵の行動中..."
 	decay_statuses("player")
 	_update_end_turn_button()
@@ -515,6 +524,7 @@ func _apply_poison_damage():
 		enemies[i].hp = max(enemies[i].hp - stacks, 0)
 		enemy_uis[i].set_hp(enemies[i].hp)
 		show_popup_damage(stacks, i)
+		AudioManager.play_se("poison_tick")
 		print("毒ダメージ: 敵%d に %d ダメージ" % [i, stacks])
 		# スタック1減少、0なら除去
 		stacks -= 1
@@ -633,6 +643,7 @@ func apply_damage(amount):
 
 	if dmg > 0:
 		_screen_shake(10.0, 0.35)
+		AudioManager.play_se("hit_player")
 
 	check_battle_result()
 
@@ -667,6 +678,8 @@ func on_victory():
 	turn_state = TurnState.BATTLE_END
 	_update_end_turn_button()
 
+	AudioManager.play_se("victory")
+	AudioManager.stop_bgm()
 	_apply_goods_effects("battle_end", null)
 	Global.player_hp = player_hp
 
@@ -684,6 +697,8 @@ func on_defeat():
 	turn_state = TurnState.BATTLE_END
 	_update_end_turn_button()
 
+	AudioManager.play_se("defeat")
+	AudioManager.stop_bgm()
 	print("敗北！ゲームオーバー画面へ")
 	get_tree().change_scene_to_file("res://scenes/GameOver.tscn")
 

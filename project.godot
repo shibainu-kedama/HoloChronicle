@@ -24,6 +24,7 @@ EnemyLoader="*res://scripts/EnemyLoader.gd"
 FadeLayer="*res://scenes/FadeLayer.tscn"
 SettingsManager="*res://scripts/SettingsManager.gd"
 RunHistory="*res://scripts/RunHistory.gd"
+AudioManager="*res://scripts/AudioManager.gd"
 
 [gui]
 

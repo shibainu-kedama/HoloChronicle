@@ -38,6 +38,7 @@ func _ready():
 	connect("pressed", Callable(self, "_on_pressed"))
 
 func _on_pressed():
+	AudioManager.play_se("card_play")
 	emit_signal("use_card", self)
 
 func _on_mouse_entered() -> void:
