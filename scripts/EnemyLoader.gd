@@ -33,25 +33,83 @@ func load_enemies_from_csv(path: String) -> void:
 			enemy.count = int(cols[8])
 		all_enemies.append(enemy)
 
-func _parse_actions(actions_str: String) -> Array:
-	var actions: Array = []
-	var parts = actions_str.split("|")
-	for part in parts:
-		var tokens = part.split(":")
-		if tokens.size() < 3:
-			continue
-		var action = {}
-		action["type"] = tokens[0]
-		var power_str = tokens[1]
-		if "x" in power_str:
-			var px = power_str.split("x")
-			action["power"] = int(px[0])
-			action["times"] = int(px[1])
+# === アクションパターン解析 ===
+#
+# 対応フォーマット:
+#   SEQ|type:power|type:power:times|...
+#       → 固定順序ループ。weight不要。
+#   PHASE|threshold|type:power:weight|...;threshold|...
+#       → HP閾値別ランダムプール。;区切りで複数フェーズ。
+#       thresholdはHP%（整数）。高→低の順で照合。
+#   type:power:weight|type:power:weight|...
+#       → 従来の重み付きランダム（後方互換）。
+
+func _parse_actions(actions_str: String) -> Dictionary:
+	var s := actions_str.strip_edges()
+
+	# ── SEQ パターン ──
+	if s.begins_with("SEQ|"):
+		var steps: Array = []
+		for step in s.substr(4).split("|"):
+			step = step.strip_edges()
+			if step != "":
+				var a := _parse_action(step)
+				if not a.is_empty():
+					steps.append(a)
+		return {"type": "seq", "steps": steps}
+
+	# ── PHASE パターン ──
+	elif s.begins_with("PHASE|"):
+		var phases: Array = []
+		for seg in s.substr(6).split(";"):
+			seg = seg.strip_edges()
+			if seg == "":
+				continue
+			var parts := seg.split("|")
+			if parts.size() < 2:
+				continue
+			var threshold := int(parts[0].strip_edges())
+			var pool: Array = []
+			for j in range(1, parts.size()):
+				var step := parts[j].strip_edges()
+				if step != "":
+					var a := _parse_action(step)
+					if not a.is_empty():
+						pool.append(a)
+			phases.append({"threshold": threshold, "pool": pool})
+		# 閾値降順ソート（高いほど先に判定）
+		phases.sort_custom(func(a, b): return a.threshold > b.threshold)
+		return {"type": "phase", "phases": phases}
+
+	# ── RANDOM パターン（従来互換）──
+	else:
+		var pool: Array = []
+		for part in s.split("|"):
+			part = part.strip_edges()
+			if part != "":
+				var a := _parse_action(part)
+				if not a.is_empty():
+					pool.append(a)
+		return {"type": "random", "pool": pool}
+
+## "type:power[:times][:weight]" → Dictionary
+## weight は省略時 1。times は multi_attack 用。
+func _parse_action(s: String) -> Dictionary:
+	var tokens := s.split(":")
+	if tokens.is_empty() or tokens[0].strip_edges() == "":
+		return {}
+	var a := {"type": tokens[0].strip_edges(), "power": 0, "weight": 1}
+	if tokens.size() >= 2:
+		var p := tokens[1].strip_edges()
+		if "x" in p:
+			var px := p.split("x")
+			a["power"] = int(px[0])
+			a["times"] = int(px[1])
 		else:
-			action["power"] = int(power_str)
-		action["weight"] = int(tokens[2])
-		actions.append(action)
-	return actions
+			a["power"] = int(p)
+	if tokens.size() >= 3:
+		a["weight"] = int(tokens[2].strip_edges())
+	return a
 
 func get_enemy_by_id(id: String) -> EnemyData:
 	for enemy in all_enemies:

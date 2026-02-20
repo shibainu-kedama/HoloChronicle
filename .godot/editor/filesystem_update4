@@ -22,3 +22,10 @@ res://data/cards.cost.translation
 res://data/cards.info.translation
 res://data/cards.image.translation
 res://data/cards.tags.translation
+res://data/enemies.name.translation
+res://data/enemies.hp.translation
+res://data/enemies.stage.translation
+res://data/enemies.is.translation
+res://data/enemies.image.translation
+res://data/enemies.actions.translation
+res://data/enemies.count.translation

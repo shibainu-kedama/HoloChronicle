@@ -123,7 +123,7 @@ func _setup_enemies():
 		enemy_data.name = "スライム"
 		enemy_data.hp = 20
 		enemy_data.image_path = "res://images/enemy_fubura.png"
-		enemy_data.actions = [{"type": "attack", "power": 6, "weight": 1}]
+		enemy_data.actions = {"type": "random", "pool": [{"type": "attack", "power": 6, "weight": 1}]}
 		enemy_data.count = 1
 
 	var count = clampi(enemy_data.count, 1, MAX_ENEMIES)
@@ -140,6 +140,7 @@ func _setup_enemies():
 			"block": 0,
 			"statuses": {},
 			"action": {},
+			"turn_index": 0,
 		}
 		enemies.append(enemy_dict)
 
@@ -344,6 +345,11 @@ func _on_card_used(card):
 		label.text = "エナジーが足りない！"
 		return
 
+	# await のあいだにカードが解放される可能性があるため、判定に必要な値を退避する
+	var effect_type: String = card.effect_type
+	var power_val: int = card.power
+	var used_card_data: CardData = card.card_data
+
 	_is_animating = true
 	player_energy -= card.cost
 	_update_end_turn_button()
@@ -352,86 +358,88 @@ func _on_card_used(card):
 	await _fly_card_to_target(card)
 
 	if battle_over or not is_inside_tree():
-		card.queue_free()
+		if is_instance_valid(card):
+			card.queue_free()
 		_is_animating = false
 		return
 
-	match card.effect_type:
+	match effect_type:
 		"attack":
-			var base = card.power + Global.player_atk_bonus
-			if card.card_data.id == "elite_strike" and (get_status("enemy", "weak") > 0 or get_status("enemy", "vulnerable") > 0):
+			var base = power_val + Global.player_atk_bonus
+			if used_card_data.id == "elite_strike" and (get_status("enemy", "weak") > 0 or get_status("enemy", "vulnerable") > 0):
 				base = 12 + Global.player_atk_bonus
-			elif card.card_data.id == "suisei_axe" and get_status("enemy", "vulnerable") > 0:
-				base = card.power + 5 + Global.player_atk_bonus
+			elif used_card_data.id == "suisei_axe" and get_status("enemy", "vulnerable") > 0:
+				base = power_val + 5 + Global.player_atk_bonus
 			var dealt = calc_attack_damage(base, "player")
 			label.text = "攻撃カード使用: %d ダメージ！" % dealt
 			apply_damage_to_enemy(dealt)
 		"self_attack":
-			var dealt = calc_attack_damage(card.power + Global.player_atk_bonus, "player")
+			var dealt = calc_attack_damage(power_val + Global.player_atk_bonus, "player")
 			apply_damage_to_enemy(dealt)
 			apply_damage(5)
 			label.text = "捨て身！ %dダメージ！ 反動で5ダメージ！" % dealt
 		"multi_attack":
-			var hit_dmg = calc_attack_damage(card.power + Global.player_atk_bonus, "player")
+			var hit_dmg = calc_attack_damage(power_val + Global.player_atk_bonus, "player")
 			for i in range(3):
 				apply_damage_to_enemy(hit_dmg)
 				if battle_over:
 					break
 			label.text = "連撃！ %d×3 ダメージ！" % hit_dmg
 		"block":
-			player_block += card.power
+			player_block += power_val
 			AudioManager.play_se("block")
-			label.text = "防御カード使用: ブロック +%d" % card.power
+			label.text = "防御カード使用: ブロック +%d" % power_val
 		"energy":
-			player_energy = min(player_energy + card.power, MAX_ENERGY)
-			label.text = "エナジー回復: +%d" % card.power
+			player_energy = min(player_energy + power_val, MAX_ENERGY)
+			label.text = "エナジー回復: +%d" % power_val
 		"energy_burst":
-			player_energy += card.power
+			player_energy += power_val
 			add_status("player", "weak", 1)
-			label.text = "覚醒！ エナジー +%d（脱力1付与）" % card.power
+			label.text = "覚醒！ エナジー +%d（脱力1付与）" % power_val
 		"draw":
-			draw_cards(card.power)
-			label.text = "ドロー！ %d枚引いた！" % card.power
+			draw_cards(power_val)
+			label.text = "ドロー！ %d枚引いた！" % power_val
 		"heal":
-			player_hp = min(player_hp + card.power, player_max_hp)
+			player_hp = min(player_hp + power_val, player_max_hp)
 			player_hp_bar.value = player_hp
 			AudioManager.play_se("heal")
-			label.text = "回復！ HP +%d" % card.power
+			label.text = "回復！ HP +%d" % power_val
 		"weak":
-			add_status("enemy", "weak", card.power)
-			label.text = "敵に脱力を%d付与！" % card.power
+			add_status("enemy", "weak", power_val)
+			label.text = "敵に脱力を%d付与！" % power_val
 		"aoe_attack":
 			var total_dmg = 0
 			for i in range(enemies.size()):
 				if enemies[i].hp > 0:
-					var dealt = calc_attack_damage(card.power + Global.player_atk_bonus, "player", -1, i)
+					var dealt = calc_attack_damage(power_val + Global.player_atk_bonus, "player", -1, i)
 					apply_damage_to_enemy(dealt, i)
 					total_dmg += dealt
 					if battle_over:
 						break
 			label.text = "全体攻撃！ 合計%dダメージ！" % total_dmg
 		"vulnerable":
-			add_status("enemy", "vulnerable", card.power)
-			label.text = "敵に脆弱を%d付与！" % card.power
+			add_status("enemy", "vulnerable", power_val)
+			label.text = "敵に脆弱を%d付与！" % power_val
 		"poison":
-			add_status("enemy", "poison", card.power)
-			label.text = "敵に毒を%d付与！" % card.power
+			add_status("enemy", "poison", power_val)
+			label.text = "敵に毒を%d付与！" % power_val
 		"aoe_poison":
 			for i in range(enemies.size()):
 				if enemies[i].hp > 0:
-					add_status("enemy", "poison", card.power, i)
-			label.text = "全敵に毒を%d付与！" % card.power
+					add_status("enemy", "poison", power_val, i)
+			label.text = "全敵に毒を%d付与！" % power_val
 		"block_draw":
-			player_block += card.power
+			player_block += power_val
 			AudioManager.play_se("block")
 			draw_cards(1)
-			label.text = "ブロック +%d＋1枚ドロー！" % card.power
+			label.text = "ブロック +%d＋1枚ドロー！" % power_val
 		"strength":
-			add_status("player", "strength", card.power)
-			label.text = "筋力 +%d！" % card.power
+			add_status("player", "strength", power_val)
+			label.text = "筋力 +%d！" % power_val
 
-	_apply_goods_effects("on_tagged_card", card)
-	card.queue_free()
+	_apply_goods_effects("on_tagged_card", used_card_data)
+	if is_instance_valid(card):
+		card.queue_free()
 	_is_animating = false
 	update_ui()
 
@@ -563,19 +571,51 @@ func decide_enemy_action(index: int):
 		enemy_uis[index].set_intent(e.action)
 		return
 
-	var total_weight = 0
-	for action in data.actions:
-		total_weight += action.get("weight", 1)
-
-	var roll = randi() % total_weight
-	var cumulative = 0
-	for action in data.actions:
-		cumulative += action.get("weight", 1)
-		if roll < cumulative:
-			e.action = action.duplicate()
-			break
+	var pattern = data.actions
+	match pattern.get("type", "random"):
+		"seq":
+			var steps: Array = pattern.get("steps", [])
+			if steps.is_empty():
+				e.action = {"type": "attack", "power": 6}
+			else:
+				var step_idx: int = e.get("turn_index", 0) % steps.size()
+				e.action = steps[step_idx].duplicate()
+				e["turn_index"] = (step_idx + 1) % steps.size()
+		"phase":
+			var phases: Array = pattern.get("phases", [])
+			var max_hp: int = data.hp if data.hp > 0 else 1
+			var hp_pct: int = int(float(e.hp) / float(max_hp) * 100.0)
+			var pool: Array = []
+			for phase in phases:
+				if hp_pct >= phase.get("threshold", 0):
+					pool = phase.get("pool", [])
+					break
+			if pool.is_empty():
+				e.action = {"type": "attack", "power": 6}
+			else:
+				e.action = _weighted_pick(pool).duplicate()
+		_:  # random（後方互換）
+			var pool: Array = pattern.get("pool", [])
+			if pool.is_empty():
+				e.action = {"type": "attack", "power": 6}
+			else:
+				e.action = _weighted_pick(pool).duplicate()
 
 	enemy_uis[index].set_intent(e.action)
+
+func _weighted_pick(pool: Array) -> Dictionary:
+	if pool.is_empty():
+		return {"type": "attack", "power": 6}
+	var total := 0
+	for a in pool:
+		total += a.get("weight", 1)
+	var roll: int = randi() % max(total, 1)
+	var cumulative := 0
+	for a in pool:
+		cumulative += a.get("weight", 1)
+		if roll < cumulative:
+			return a
+	return pool[pool.size() - 1]
 
 # === 敵ターン（全敵が順番に行動） ===
 
@@ -778,7 +818,12 @@ func _apply_goods_effects(trigger: String, card) -> void:
 			continue
 
 		if trigger == "on_tagged_card":
-			if card == null or not card.card_data.has_tag(char_tag):
+			var cdata: CardData = null
+			if card is CardData:
+				cdata = card as CardData
+			elif card != null:
+				cdata = card.card_data
+			if cdata == null or not cdata.has_tag(char_tag):
 				continue
 
 		match goods.effect:
