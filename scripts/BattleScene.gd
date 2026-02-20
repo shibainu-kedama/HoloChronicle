@@ -72,6 +72,10 @@ var target_index: int = 0
 var battle_over := false
 var talent_used_this_turn := false
 
+# アニメーション制御
+var _is_animating := false
+var _shake_tween: Tween
+
 func _ready():
 	print("バトル開始")
 	deck = Global.player_deck.duplicate() as Array[CardData]
@@ -298,7 +302,7 @@ func calc_attack_damage(base: int, attacker: String, attacker_idx: int = -1, def
 
 func _update_end_turn_button():
 	if end_turn_button:
-		end_turn_button.disabled = turn_state != TurnState.PLAYER_TURN
+		end_turn_button.disabled = not _can_act()
 
 # === カード処理 ===
 
@@ -330,16 +334,24 @@ func Discard_update(card):
 	discard_label.text = str(discard_pile.size())
 
 func _on_card_used(card):
-	if not is_player_turn():
+	if not _can_act():
 		return
 
 	if card.cost > player_energy:
 		label.text = "エナジーが足りない！"
 		return
 
+	_is_animating = true
 	player_energy -= card.cost
-	card_container.remove_child(card)
-	Discard_update(card)
+	_update_end_turn_button()
+
+	# カードを敵へ飛ばすアニメーション（内部でremove/discardも処理）
+	await _fly_card_to_target(card)
+
+	if battle_over or not is_inside_tree():
+		card.queue_free()
+		_is_animating = false
+		return
 
 	match card.effect_type:
 		"attack":
@@ -413,8 +425,9 @@ func _on_card_used(card):
 			label.text = "筋力 +%d！" % card.power
 
 	_apply_goods_effects("on_tagged_card", card)
-	update_ui()
 	card.queue_free()
+	_is_animating = false
+	update_ui()
 
 # === 敵へのダメージ ===
 
@@ -430,6 +443,10 @@ func apply_damage_to_enemy(amount: int, index: int = -1):
 	enemy_uis[idx].set_hp(e.hp)
 	show_popup_damage(actual, idx)
 
+	if actual > 0 and idx < enemy_images.size():
+		_flash_enemy(idx)
+		_spawn_hit_effect(enemy_images[idx].global_position + enemy_images[idx].size * 0.5)
+
 	if e.hp <= 0:
 		# 撃破 → スロット非表示化
 		enemy_slots[idx].visible = false
@@ -440,7 +457,7 @@ func apply_damage_to_enemy(amount: int, index: int = -1):
 # === ターン管理 ===
 
 func _on_EndTurnButton_pressed():
-	if not is_player_turn():
+	if not _can_act():
 		return
 
 	end_player_turn()
@@ -452,6 +469,9 @@ func _on_EndTurnButton_pressed():
 
 func is_player_turn() -> bool:
 	return turn_state == TurnState.PLAYER_TURN
+
+func _can_act() -> bool:
+	return turn_state == TurnState.PLAYER_TURN and not _is_animating and not battle_over
 
 func end_player_turn():
 	turn_state = TurnState.ENEMY_TURN
@@ -611,6 +631,9 @@ func apply_damage(amount):
 	player_hp_bar.value = player_hp
 	print("被ダメ: %d (ブロック: %d → %d), 残HP: %d" % [amount, blocked, player_block, player_hp])
 
+	if dmg > 0:
+		_screen_shake(10.0, 0.35)
+
 	check_battle_result()
 
 # === ポップアップダメージ ===
@@ -684,7 +707,7 @@ func send_deck_to_zone():
 # === タレント（固有スキル） ===
 
 func _on_TalentButton_pressed():
-	if not is_player_turn() or talent_used_this_turn or battle_over:
+	if not _can_act() or talent_used_this_turn:
 		return
 
 	var cost = _get_talent_cost()
@@ -723,9 +746,8 @@ func _update_talent_button():
 	if not talent_button:
 		return
 	talent_button.disabled = (
-		turn_state != TurnState.PLAYER_TURN
+		not _can_act()
 		or talent_used_this_turn
-		or battle_over
 		or player_energy < _get_talent_cost()
 	)
 
@@ -773,7 +795,7 @@ func _setup_potion_buttons():
 			potion_buttons[i].visible = false
 
 func _on_potion_used(index: int):
-	if not is_player_turn() or battle_over:
+	if not _can_act():
 		return
 	if index >= Global.player_potions.size():
 		return
@@ -818,4 +840,91 @@ func _on_potion_used(index: int):
 func _update_potion_buttons():
 	for i in range(potion_buttons.size()):
 		if potion_buttons[i].visible:
-			potion_buttons[i].disabled = not is_player_turn() or battle_over
+			potion_buttons[i].disabled = not _can_act()
+
+# === バトルアニメーション ===
+
+# カードを対象（敵/自分）へ飛ばしてフェードさせる。remove/discardも内部で行う。
+func _fly_card_to_target(card: Node) -> void:
+	var from_pos = card.global_position
+	card_container.remove_child(card)
+	Discard_update(card)
+	add_child(card)
+	card.global_position = from_pos
+	card.z_index = 20
+
+	var effect = card.effect_type
+	var fly_to_single = effect in ["attack", "self_attack", "multi_attack", "weak", "vulnerable", "poison"]
+	var fly_to_aoe    = effect in ["aoe_attack", "aoe_poison"]
+
+	if fly_to_single or fly_to_aoe:
+		var target_pos: Vector2
+		if fly_to_single and target_index >= 0 and target_index < enemy_images.size():
+			var img = enemy_images[target_index]
+			target_pos = img.global_position + img.size * 0.5
+		else:
+			target_pos = enemy_container.global_position + enemy_container.size * 0.5
+
+		var tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(card, "global_position", target_pos, 0.2) \
+			.set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_IN)
+		tween.tween_property(card, "scale", Vector2(0.5, 0.5), 0.2) \
+			.set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_IN)
+		tween.tween_property(card, "rotation", randf_range(-0.4, 0.4), 0.2)
+		tween.tween_property(card, "modulate:a", 0.0, 0.2)
+		await tween.finished
+	else:
+		# ブロック・回復・ドローなど自分効果: その場でフェードアウト
+		var tween = create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(card, "scale", Vector2(0.0, 0.0), 0.15) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tween.tween_property(card, "modulate:a", 0.0, 0.15)
+		await tween.finished
+
+# 画面揺れ
+func _screen_shake(intensity: float = 8.0, duration: float = 0.3) -> void:
+	if _shake_tween and _shake_tween.is_running():
+		return
+	var orig = position
+	_shake_tween = create_tween()
+	var steps = int(duration * 20)
+	for i in range(steps):
+		var offset = Vector2(randf_range(-intensity, intensity), randf_range(-intensity, intensity))
+		_shake_tween.tween_property(self, "position", orig + offset, duration / float(steps))
+	_shake_tween.tween_property(self, "position", orig, 0.05)
+
+# 敵ヒット時の赤フラッシュ
+func _flash_enemy(idx: int) -> void:
+	if idx < 0 or idx >= enemy_images.size():
+		return
+	var img = enemy_images[idx]
+	var restore = Color(1.3, 1.3, 1.3, 1.0) if idx == target_index else Color(1.0, 1.0, 1.0, 1.0)
+	var tween = create_tween()
+	tween.tween_property(img, "modulate", Color(2.5, 0.3, 0.3, 1.0), 0.06)
+	tween.tween_property(img, "modulate", restore, 0.25).set_trans(Tween.TRANS_SINE)
+
+# ヒット時パーティクル（CPUParticles2D をコードで生成）
+func _spawn_hit_effect(pos: Vector2) -> void:
+	var particles = CPUParticles2D.new()
+	add_child(particles)
+	particles.global_position = pos
+	particles.z_index = 10
+	particles.emitting = true
+	particles.one_shot = true
+	particles.amount = 12
+	particles.lifetime = 0.5
+	particles.explosiveness = 0.9
+	particles.direction = Vector2(0, -1)
+	particles.spread = 160.0
+	particles.gravity = Vector2(0, 300)
+	particles.initial_velocity_min = 60.0
+	particles.initial_velocity_max = 180.0
+	particles.scale_amount_min = 3.0
+	particles.scale_amount_max = 7.0
+	particles.color = Color(1.0, 0.6, 0.1)
+	get_tree().create_timer(1.2).timeout.connect(func():
+		if is_instance_valid(particles):
+			particles.queue_free()
+	)
