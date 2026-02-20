@@ -10,6 +10,7 @@ var id: String = ""
 @export var info: String
 @export var image_path: String
 @export var tags: PackedStringArray = []
+var rarity: String = "common"   # "common" / "uncommon" / "rare"
 var upgraded: bool = false
 
 func has_tag(tag: String) -> bool:
@@ -53,4 +54,5 @@ static func from_dict(data: Dictionary) -> CardData:
 	var tags_str: String = data.get("tags", "")
 	if tags_str != "":
 		card.tags = PackedStringArray(tags_str.split("|"))
+	card.rarity = data.get("rarity", "common")
 	return card

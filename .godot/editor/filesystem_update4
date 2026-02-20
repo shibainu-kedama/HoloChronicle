@@ -15,3 +15,10 @@ res://data/goods.trigger.translation
 res://data/goods.effect.translation
 res://data/goods.value.translation
 res://data/goods.tag.translation
+res://data/cards.name.translation
+res://data/cards.effect.translation
+res://data/cards.power.translation
+res://data/cards.cost.translation
+res://data/cards.info.translation
+res://data/cards.image.translation
+res://data/cards.tags.translation

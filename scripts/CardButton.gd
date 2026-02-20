@@ -61,13 +61,21 @@ func update_card_display(data: CardData) -> void:
 	$VBoxContainer/Label_Info.text = card_data.info
 	$CardTexture.texture = load(card_data.image_path)
 
-	# 呪いカードは名前を赤紫色に変更
+	# レアリティ・呪いに応じた名前色
 	if card_data.is_curse():
 		$VBoxContainer/Label_Name.add_theme_color_override("font_color", Color(0.7, 0.1, 0.5))
 	else:
-		$VBoxContainer/Label_Name.remove_theme_color_override("font_color")
-	# ツールチップ構築
-	var tip := "%s\nコスト: %d / 威力: %d" % [card_data.name, card_data.cost, card_data.power]
+		match card_data.rarity:
+			"rare":
+				$VBoxContainer/Label_Name.add_theme_color_override("font_color", Color(1.0, 0.78, 0.1))   # ゴールド
+			"uncommon":
+				$VBoxContainer/Label_Name.add_theme_color_override("font_color", Color(0.3, 0.7, 1.0))    # 青
+			_:
+				$VBoxContainer/Label_Name.remove_theme_color_override("font_color")
+	# ツールチップ構築（レアリティ表示付き）
+	const RARITY_LABELS := {"common": "★ コモン", "uncommon": "★★ アンコモン", "rare": "★★★ レア"}
+	var rarity_label: String = RARITY_LABELS.get(card_data.rarity, "★ コモン")
+	var tip := "%s  [%s]\nコスト: %d / 威力: %d" % [card_data.name, rarity_label, card_data.cost, card_data.power]
 	# キーワード（カードタグ）
 	var tags_text := ""
 	for i in range(card_data.tags.size()):

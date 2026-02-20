@@ -201,19 +201,29 @@ func _get_stage_number() -> int:
 		return int(num_str)
 	return 1
 
-# 推しタグによる重み付きランダム抽選
+# レアリティ＋推しタグによる重み付きランダム抽選
 func pick_random_cards(array: Array[CardData], count: int) -> Array[CardData]:
 	var oshi_tag := ""
 	if Global.selected_character:
 		oshi_tag = Global.selected_character.tag
 
-	# 重み付きプールを構築（推しタグカードは3倍の出現率、呪いカードは除外）
+	# 戦況に応じたレアリティ重み
+	var rarity_weights: Dictionary
+	if Global.is_boss_stage():
+		rarity_weights = {"common": 2, "uncommon": 5, "rare": 5}
+	elif Global.is_elite_stage():
+		rarity_weights = {"common": 4, "uncommon": 6, "rare": 3}
+	else:
+		rarity_weights = {"common": 10, "uncommon": 4, "rare": 1}
+
+	# 重み付きプールを構築（呪いカードは除外）
 	var weighted_pool: Array[CardData] = []
 	for card in array:
 		if card.is_curse():
 			continue
-		var weight := 3 if oshi_tag != "" and card.has_tag(oshi_tag) else 1
-		for i in range(weight):
+		var rarity_w: int = rarity_weights.get(card.rarity, 10)
+		var oshi_w: int = 3 if oshi_tag != "" and card.has_tag(oshi_tag) else 1
+		for i in range(rarity_w * oshi_w):
 			weighted_pool.append(card)
 
 	weighted_pool.shuffle()

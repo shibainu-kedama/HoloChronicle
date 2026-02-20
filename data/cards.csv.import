@@ -6,10 +6,10 @@ uid="uid://slxd6qjmgsml"
 
 [deps]
 
-files=["res://data/cards.name.translation", "res://data/cards.effect.translation", "res://data/cards.power.translation", "res://data/cards.cost.translation", "res://data/cards.info.translation", "res://data/cards.image.translation", "res://data/cards.tags.translation"]
+files=["res://data/cards.name.translation", "res://data/cards.effect.translation", "res://data/cards.power.translation", "res://data/cards.cost.translation", "res://data/cards.info.translation", "res://data/cards.image.translation", "res://data/cards.tags.translation", "res://data/cards.rarity.translation"]
 
 source_file="res://data/cards.csv"
-dest_files=["res://data/cards.name.translation", "res://data/cards.effect.translation", "res://data/cards.power.translation", "res://data/cards.cost.translation", "res://data/cards.info.translation", "res://data/cards.image.translation", "res://data/cards.tags.translation"]
+dest_files=["res://data/cards.name.translation", "res://data/cards.effect.translation", "res://data/cards.power.translation", "res://data/cards.cost.translation", "res://data/cards.info.translation", "res://data/cards.image.translation", "res://data/cards.tags.translation", "res://data/cards.rarity.translation"]
 
 [params]
 
