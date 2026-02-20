@@ -780,6 +780,17 @@ func _apply_goods_effects(trigger: String, card) -> void:
 			"gold":
 				Global.player_gold += goods.value
 				print("🎁 グッズ[%s]: ゴールド +%d" % [goods.name, goods.value])
+			"strength":
+				add_status("player", "strength", goods.value)
+				print("🎁 グッズ[%s]: 筋力 +%d" % [goods.name, goods.value])
+			"draw":
+				draw_cards(goods.value)
+				print("🎁 グッズ[%s]: %d枚ドロー" % [goods.name, goods.value])
+			"poison_all":
+				for i in range(enemies.size()):
+					if enemies[i].hp > 0:
+						add_status("enemy", "poison", goods.value, i)
+				print("🎁 グッズ[%s]: 全敵に毒%d付与" % [goods.name, goods.value])
 
 # === ポーション（消耗品） ===
 

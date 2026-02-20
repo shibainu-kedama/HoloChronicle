@@ -9,3 +9,9 @@ res://scenes/CharacterSelectScene.tscn
 res://scenes/TitleScene.tscn
 res://scenes/CardButton.tscn
 res://scenes/CardSlot.tscn
+res://data/goods.name.translation
+res://data/goods.description.translation
+res://data/goods.trigger.translation
+res://data/goods.effect.translation
+res://data/goods.value.translation
+res://data/goods.tag.translation
