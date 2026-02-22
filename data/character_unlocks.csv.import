@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cmeatcftdnc2s"
+
+[deps]
+
+files=["res://data/character_unlocks.unlock.translation", "res://data/character_unlocks.unlock.translation"]
+
+source_file="res://data/character_unlocks.csv"
+dest_files=["res://data/character_unlocks.unlock.translation", "res://data/character_unlocks.unlock.translation"]
+
+[params]
+
+compress=true
+delimiter=0

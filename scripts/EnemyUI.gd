@@ -1,13 +1,6 @@
 extends Control
 class_name EnemyUI
 
-const STATUS_DESCRIPTIONS := {
-	"weak": "脱力：与ダメージが25%減少",
-	"vulnerable": "脆弱：被ダメージが50%増加",
-	"strength": "筋力：攻撃ダメージが増加",
-	"poison": "毒：ターン開始時にスタック分ダメージ（1ずつ減少）",
-}
-
 @onready var enemy_hp_bar = $VBoxContainer/EnemyHPBar
 @onready var enemy_hp_label = $VBoxContainer/EnemyHPLabel
 @onready var intent_label = $VBoxContainer/EnemyIntentLabel
@@ -60,11 +53,13 @@ func _ready() -> void:
 func set_statuses(statuses: Dictionary) -> void:
 	if status_label:
 		status_label.text = format_statuses(statuses)
-		# ステータスツールチップ構築
+		# ステータスツールチップ構築（CSV参照）
 		var tip_parts: Array[String] = []
 		for key in statuses:
-			if statuses[key] > 0 and STATUS_DESCRIPTIONS.has(key):
-				tip_parts.append(STATUS_DESCRIPTIONS[key])
+			if statuses[key] > 0:
+				var d: String = CardLoader.get_status_description(key)
+				if d != "":
+					tip_parts.append(d)
 		status_label.tooltip_text = "\n".join(tip_parts)
 
 static func format_statuses(statuses: Dictionary) -> String:

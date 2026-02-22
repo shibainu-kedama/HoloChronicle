@@ -1,0 +1,5 @@
+id,description
+weak,脱力：与ダメージが25%減少
+vulnerable,脆弱：被ダメージが50%増加
+strength,筋力：攻撃ダメージが増加
+poison,毒：ターン開始時にスタック分ダメージ（1ずつ減少）

@@ -37,13 +37,6 @@ extends Control
 	$EnemyContainer/EnemySlot2/EnemyUI2,
 ]
 
-const STATUS_DESCRIPTIONS := {
-	"weak": "脱力：与ダメージが25%減少",
-	"vulnerable": "脆弱：被ダメージが50%増加",
-	"strength": "筋力：攻撃ダメージが増加",
-	"poison": "毒：ターン開始時にスタック分ダメージ（1ずつ減少）",
-}
-
 const MAX_ENERGY = 3
 const MAX_HAND_SIZE = 10
 const MAX_ENEMIES = 3
@@ -225,11 +218,13 @@ func update_ui():
 	# プレイヤーステータス
 	if player_status_label:
 		player_status_label.text = _format_statuses(player_statuses)
-		# ステータスツールチップ構築
+		# ステータスツールチップ構築（CSV参照）
 		var tip_parts: Array[String] = []
 		for key in player_statuses:
-			if player_statuses[key] > 0 and STATUS_DESCRIPTIONS.has(key):
-				tip_parts.append(STATUS_DESCRIPTIONS[key])
+			if player_statuses[key] > 0:
+				var d: String = CardLoader.get_status_description(key)
+				if d != "":
+					tip_parts.append(d)
 		player_status_label.tooltip_text = "\n".join(tip_parts)
 	_update_end_turn_button()
 	_update_talent_button()

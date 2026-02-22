@@ -23,3 +23,4 @@ res://scenes/CharacterSelectScene.tscn
 res://scenes/TitleScene.tscn
 res://scenes/CardButton.tscn
 res://scenes/CardSlot.tscn
+res://data/character_unlocks.unlock.translation

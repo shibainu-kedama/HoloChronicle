@@ -1,0 +1,7 @@
+char_id,unlock_type,unlock_id
+lui,cards,lui_kessen
+lui,goods,lui_talon
+miko,cards,miko_oracle
+miko,goods,miko_purification
+suisei,cards,suisei_orbit
+suisei,goods,suisei_comet_core

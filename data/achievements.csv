@@ -1,0 +1,8 @@
+id,name,desc,trigger_note
+first_clear,初クリア,初めてゲームをクリアした,ゲームクリア時
+lui_clear,鷹の覇道,Luiでゲームをクリアした,キャラLuiでクリア時
+miko_clear,巫女の神通力,Mikoでゲームをクリアした,キャラMikoでクリア時
+suisei_clear,彗星の軌跡,Suiseiでゲームをクリアした,キャラSuiseiでクリア時
+all_chars_clear,全員制覇,全キャラクターでゲームをクリアした,lui/miko/suiseiすべてクリア後
+rich_clear,大富豪,300ゴールド以上で勝利した,クリア時ゴールド>=300
+small_deck,精鋭デッキ,デッキ15枚以下でクリアした,クリア時デッキ枚数<=15

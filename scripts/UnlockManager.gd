@@ -1,54 +1,14 @@
 extends Node
 
 const UNLOCK_PATH := "user://unlocks.cfg"
+const ACHIEVEMENTS_CSV_PATH := "res://data/achievements.csv"
+const CHARACTER_UNLOCKS_CSV_PATH := "res://data/character_unlocks.csv"
 
-# 実績定義（ID → 表示名・説明）
-const ACHIEVEMENTS: Dictionary = {
-	"first_clear": {
-		"name": "初クリア",
-		"desc": "初めてゲームをクリアした"
-	},
-	"lui_clear": {
-		"name": "鷹の覇道",
-		"desc": "Luiでゲームをクリアした"
-	},
-	"miko_clear": {
-		"name": "巫女の神通力",
-		"desc": "Mikoでゲームをクリアした"
-	},
-	"suisei_clear": {
-		"name": "彗星の軌跡",
-		"desc": "Suiseiでゲームをクリアした"
-	},
-	"all_chars_clear": {
-		"name": "全員制覇",
-		"desc": "全キャラクターでゲームをクリアした"
-	},
-	"rich_clear": {
-		"name": "大富豪",
-		"desc": "300ゴールド以上で勝利した"
-	},
-	"small_deck": {
-		"name": "精鋭デッキ",
-		"desc": "デッキ15枚以下でクリアした"
-	},
-}
+# 実績定義（ID → 表示名・説明）CSVから読み込む
+var ACHIEVEMENTS: Dictionary = {}
 
-# キャラクターIDごとのクリアアンロック（カードID・グッズID）
-const CHAR_CLEAR_UNLOCKS: Dictionary = {
-	"lui": {
-		"cards": ["lui_kessen"],
-		"goods": ["lui_talon"],
-	},
-	"miko": {
-		"cards": ["miko_oracle"],
-		"goods": ["miko_purification"],
-	},
-	"suisei": {
-		"cards": ["suisei_orbit"],
-		"goods": ["suisei_comet_core"],
-	},
-}
+# キャラクターIDごとのクリアアンロック（カードID・グッズID）CSVから読み込む
+var CHAR_CLEAR_UNLOCKS: Dictionary = {}
 
 var _cfg: ConfigFile
 
@@ -56,6 +16,67 @@ var _cfg: ConfigFile
 func _ready() -> void:
 	_cfg = ConfigFile.new()
 	_cfg.load(UNLOCK_PATH)
+	_load_achievements_from_csv()
+	_load_character_unlocks_from_csv()
+
+
+func _load_achievements_from_csv() -> void:
+	ACHIEVEMENTS.clear()
+	var file: FileAccess = FileAccess.open(ACHIEVEMENTS_CSV_PATH, FileAccess.READ)
+	if file == null:
+		push_error("実績CSVが開けませんでした: " + ACHIEVEMENTS_CSV_PATH)
+		return
+	if file.eof_reached():
+		push_warning("実績CSVにデータがありません")
+		return
+	var headers: PackedStringArray = file.get_csv_line()
+	while not file.eof_reached():
+		var row: PackedStringArray = file.get_csv_line()
+		if row.size() == 1 and row[0] == "":
+			continue
+		var id_col: int = headers.find("id")
+		var name_col: int = headers.find("name")
+		var desc_col: int = headers.find("desc")
+		if id_col < 0 or name_col < 0 or desc_col < 0:
+			push_error("実績CSVに id / name / desc 列がありません")
+			return
+		var ach_id: String = row[id_col] if id_col < row.size() else ""
+		if ach_id.is_empty():
+			continue
+		ACHIEVEMENTS[ach_id] = {
+			"name": row[name_col] if name_col < row.size() else ach_id,
+			"desc": row[desc_col] if desc_col < row.size() else "",
+		}
+
+
+func _load_character_unlocks_from_csv() -> void:
+	CHAR_CLEAR_UNLOCKS.clear()
+	var file: FileAccess = FileAccess.open(CHARACTER_UNLOCKS_CSV_PATH, FileAccess.READ)
+	if file == null:
+		push_error("キャラアンロックCSVが開けませんでした: " + CHARACTER_UNLOCKS_CSV_PATH)
+		return
+	var headers: PackedStringArray = file.get_csv_line()
+	var char_col: int = headers.find("char_id")
+	var type_col: int = headers.find("unlock_type")
+	var id_col: int = headers.find("unlock_id")
+	if char_col < 0 or type_col < 0 or id_col < 0:
+		push_error("character_unlocks.csv に char_id / unlock_type / unlock_id 列がありません")
+		return
+	while not file.eof_reached():
+		var row: PackedStringArray = file.get_csv_line()
+		if row.size() == 1 and row[0] == "":
+			continue
+		var cid: String = row[char_col] if char_col < row.size() else ""
+		var utype: String = row[type_col] if type_col < row.size() else ""
+		var uid: String = row[id_col] if id_col < row.size() else ""
+		if cid.is_empty() or utype.is_empty() or uid.is_empty():
+			continue
+		if not CHAR_CLEAR_UNLOCKS.has(cid):
+			CHAR_CLEAR_UNLOCKS[cid] = {"cards": [], "goods": []}
+		var arr: Array = CHAR_CLEAR_UNLOCKS[cid].get(utype, [])
+		if uid not in arr:
+			arr.append(uid)
+		CHAR_CLEAR_UNLOCKS[cid][utype] = arr
 
 
 # === 実績チェック ===

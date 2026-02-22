@@ -1,9 +1,5 @@
 extends Control
 
-const CARD_PRICES = {0: 30, 1: 50, 2: 75}
-const UPGRADE_COST = 75
-const GOODS_PRICE = 100
-
 @onready var gold_label: Label = $VBoxContainer/Label_Gold
 @onready var btn_upgrade: Button = $VBoxContainer/Btn_Upgrade
 @onready var btn_leave: Button = $VBoxContainer/Btn_Leave
@@ -97,12 +93,12 @@ func _setup_goods_display() -> void:
 	unowned.shuffle()
 	shop_goods = unowned[0]
 	label_goods_info.text = "%s - %s" % [shop_goods.name, shop_goods.description]
-	btn_buy_goods.text = "購入（%dG）" % GOODS_PRICE
-	btn_buy_goods.disabled = Global.player_gold < GOODS_PRICE
+	btn_buy_goods.text = "購入（%dG）" % CardLoader.get_goods_price()
+	btn_buy_goods.disabled = Global.player_gold < CardLoader.get_goods_price()
 	btn_buy_goods.pressed.connect(_on_buy_goods)
 
 func _get_price(card: CardData) -> int:
-	return CARD_PRICES.get(card.cost, 50)
+	return CardLoader.get_card_price(card.cost)
 
 func _on_buy(index: int) -> void:
 	if index >= shop_cards.size():
@@ -123,10 +119,10 @@ func _on_buy(index: int) -> void:
 	_update_upgrade_button()
 
 func _on_buy_goods() -> void:
-	if shop_goods == null or Global.player_gold < GOODS_PRICE:
+	if shop_goods == null or Global.player_gold < CardLoader.get_goods_price():
 		return
 
-	Global.player_gold -= GOODS_PRICE
+	Global.player_gold -= CardLoader.get_goods_price()
 	Global.player_goods.append(shop_goods)
 	print("🎁 ショップ購入グッズ: %s" % shop_goods.name)
 
@@ -201,7 +197,7 @@ func _update_buy_buttons() -> void:
 	# グッズボタンの更新
 	var btn_buy_goods = $VBoxContainer/Btn_BuyGoods
 	if btn_buy_goods.visible and btn_buy_goods.text != "売り切れ":
-		btn_buy_goods.disabled = Global.player_gold < GOODS_PRICE
+		btn_buy_goods.disabled = Global.player_gold < CardLoader.get_goods_price()
 
 	# ポーションボタンの更新
 	var btn_buy_potion = $VBoxContainer/Btn_BuyPotion
@@ -212,8 +208,8 @@ func _update_buy_buttons() -> void:
 
 func _update_upgrade_button() -> void:
 	var has_upgradable = _has_upgradable_cards()
-	btn_upgrade.disabled = Global.player_gold < UPGRADE_COST or not has_upgradable
-	btn_upgrade.text = "カード強化（%dG）" % UPGRADE_COST
+	btn_upgrade.disabled = Global.player_gold < CardLoader.get_upgrade_cost() or not has_upgradable
+	btn_upgrade.text = "カード強化（%dG）" % CardLoader.get_upgrade_cost()
 
 func _has_upgradable_cards() -> bool:
 	for card in Global.player_deck:
@@ -222,7 +218,7 @@ func _has_upgradable_cards() -> bool:
 	return false
 
 func _on_upgrade_pressed() -> void:
-	if Global.player_gold < UPGRADE_COST:
+	if Global.player_gold < CardLoader.get_upgrade_cost():
 		return
 	_show_upgrade_popup()
 
@@ -252,10 +248,10 @@ func _show_upgrade_popup() -> void:
 
 func _on_upgrade_card_selected(index: int) -> void:
 	var card = Global.player_deck[index]
-	if card.upgraded or Global.player_gold < UPGRADE_COST:
+	if card.upgraded or Global.player_gold < CardLoader.get_upgrade_cost():
 		return
 
-	Global.player_gold -= UPGRADE_COST
+	Global.player_gold -= CardLoader.get_upgrade_cost()
 	card.upgrade()
 
 	upgrade_popup.visible = false
