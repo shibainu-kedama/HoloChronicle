@@ -11,6 +11,7 @@ var id: String = ""
 @export var image_path: String
 @export var tags: PackedStringArray = []
 var rarity: String = "common"   # "common" / "uncommon" / "rare"
+var unlock_key: String = ""     # 空なら常に使用可能。非空なら対応実績の取得が必要
 var upgraded: bool = false
 
 func has_tag(tag: String) -> bool:
@@ -55,4 +56,5 @@ static func from_dict(data: Dictionary) -> CardData:
 	if tags_str != "":
 		card.tags = PackedStringArray(tags_str.split("|"))
 	card.rarity = data.get("rarity", "common")
+	card.unlock_key = data.get("unlock_key", "")
 	return card

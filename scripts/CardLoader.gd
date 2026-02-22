@@ -36,6 +36,12 @@ func load_cards_from_csv(path: String):
 	
 	return all_cards
 
+# アンロック済みカードのみ返す（unlock_keyが空 or 実績取得済み）
+func get_available_cards() -> Array[CardData]:
+	return all_cards.filter(func(c: CardData) -> bool:
+		return c.unlock_key == "" or UnlockManager.is_achievement_earned(c.unlock_key)
+	)
+
 # ID検索用
 func get_card_by_id(id: String) -> CardData:
 	for card in all_cards:
@@ -67,6 +73,12 @@ func load_goods_from_csv(path: String):
 			dict[headers[i]] = row[i]
 		var goods = GoodsData.from_dict(dict)
 		all_goods.append(goods)
+
+# アンロック済みグッズのみ返す
+func get_available_goods() -> Array[GoodsData]:
+	return all_goods.filter(func(g: GoodsData) -> bool:
+		return g.unlock_key == "" or UnlockManager.is_achievement_earned(g.unlock_key)
+	)
 
 func get_goods_by_id(id: String) -> GoodsData:
 	for goods in all_goods:

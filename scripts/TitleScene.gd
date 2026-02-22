@@ -12,6 +12,10 @@ extends Control
 @onready var bgm_slider: HSlider = $SettingsPopup/MarginContainer/VBoxContainer/BGMSlider
 @onready var se_slider: HSlider = $SettingsPopup/MarginContainer/VBoxContainer/SESlider
 @onready var close_settings_button: Button = $SettingsPopup/MarginContainer/VBoxContainer/CloseButton
+@onready var achievements_button: Button = $ButtonContainer/AchievementsButton
+@onready var achievements_popup: PopupPanel = $AchievementsPopup
+@onready var achievement_list: VBoxContainer = $AchievementsPopup/MarginContainer/VBoxContainer/ScrollContainer/AchievementList
+@onready var close_achievements_button: Button = $AchievementsPopup/MarginContainer/VBoxContainer/CloseAchievementsButton
 @onready var quit_confirm_dialog: ConfirmationDialog = $QuitConfirmDialog
 
 func _ready() -> void:
@@ -21,9 +25,11 @@ func _ready() -> void:
 	start_button.pressed.connect(_on_start_button_pressed)
 	settings_button.pressed.connect(_on_settings_button_pressed)
 	history_button.pressed.connect(_on_history_button_pressed)
+	achievements_button.pressed.connect(_on_achievements_button_pressed)
 	quit_button.pressed.connect(_on_quit_button_pressed)
 	close_settings_button.pressed.connect(_on_close_settings_pressed)
 	close_history_button.pressed.connect(_on_close_history_pressed)
+	close_achievements_button.pressed.connect(_on_close_achievements_pressed)
 	quit_confirm_dialog.confirmed.connect(_on_quit_confirmed)
 
 	# 音量スライダーシグナル
@@ -43,6 +49,7 @@ func _ready() -> void:
 	_setup_button_hover(start_button)
 	_setup_button_hover(settings_button)
 	_setup_button_hover(history_button)
+	_setup_button_hover(achievements_button)
 	_setup_button_hover(quit_button)
 
 	# フェードイン
@@ -81,6 +88,29 @@ func _on_settings_button_pressed() -> void:
 func _on_history_button_pressed() -> void:
 	_populate_history()
 	history_popup.popup_centered()
+
+func _on_achievements_button_pressed() -> void:
+	_populate_achievements()
+	achievements_popup.popup_centered()
+
+func _on_close_achievements_pressed() -> void:
+	achievements_popup.hide()
+
+func _populate_achievements() -> void:
+	for child in achievement_list.get_children():
+		child.queue_free()
+
+	for ach in UnlockManager.get_all_achievements():
+		var lbl := Label.new()
+		if ach.earned:
+			lbl.text = "★ %s — %s" % [ach.name, ach.desc]
+			lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+		else:
+			lbl.text = "  %s — %s" % [ach.name, ach.desc]
+			lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+		lbl.add_theme_font_size_override("font_size", 13)
+		lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		achievement_list.add_child(lbl)
 
 func _on_close_history_pressed() -> void:
 	history_popup.hide()

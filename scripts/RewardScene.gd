@@ -53,9 +53,10 @@ func _ready():
 	$VBoxContainer/PotionRewardPanel/Btn_PotionAccept.pressed.connect(_on_potion_accept)
 	$VBoxContainer/PotionRewardPanel/Btn_PotionSkip.pressed.connect(_on_potion_skip)
 
-	# すでにロード済みのカードからランダムに最大3枚抽選
-	var offer_count = min(3, CardLoader.all_cards.size(), card_buttons.size())
-	reward_cards = pick_random_cards(CardLoader.all_cards, offer_count)
+	# アンロック済みカードからランダムに最大3枚抽選
+	var available := CardLoader.get_available_cards()
+	var offer_count = min(3, available.size(), card_buttons.size())
+	reward_cards = pick_random_cards(available, offer_count)
 	show_reward_cards(offer_count)
 
 func show_reward_cards(count: int):
@@ -91,9 +92,9 @@ func _on_skip_pressed():
 	_try_goods_reward()
 
 func _try_goods_reward():
-	# 未所持グッズプールから候補取得
+	# アンロック済み・未所持グッズプールから候補取得
 	var owned_ids = Global.player_goods.map(func(g): return g.id)
-	var unowned = CardLoader.all_goods.filter(func(g): return g.id not in owned_ids)
+	var unowned = CardLoader.get_available_goods().filter(func(g): return g.id not in owned_ids)
 
 	# プールが空 → ポーション報酬判定へ
 	# エリート勝利時はグッズ確定、通常は50%で不発

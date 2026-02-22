@@ -64,6 +64,11 @@ custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 text = "履歴"
 
+[node name="AchievementsButton" type="Button" parent="ButtonContainer"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+text = "実績"
+
 [node name="QuitButton" type="Button" parent="ButtonContainer"]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
@@ -151,6 +156,43 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 4
 
 [node name="CloseHistoryButton" type="Button" parent="HistoryPopup/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "閉じる"
+
+[node name="AchievementsPopup" type="PopupPanel" parent="."]
+title = "実績"
+initial_position = 1
+size = Vector2i(500, 420)
+
+[node name="MarginContainer" type="MarginContainer" parent="AchievementsPopup"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 496.0
+offset_bottom = 416.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="AchievementsPopup/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ScrollContainer" type="ScrollContainer" parent="AchievementsPopup/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="AchievementList" type="VBoxContainer" parent="AchievementsPopup/MarginContainer/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="CloseAchievementsButton" type="Button" parent="AchievementsPopup/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "閉じる"
 

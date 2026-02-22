@@ -48,7 +48,7 @@ func _pick_shop_cards(count: int) -> Array[CardData]:
 
 	# 重み付きプール（推しタグカードは3倍の出現率、呪いカードは除外）
 	var weighted_pool: Array[CardData] = []
-	for card in CardLoader.all_cards:
+	for card in CardLoader.get_available_cards():
 		if card.is_curse():
 			continue
 		var weight := 3 if oshi_tag != "" and card.has_tag(oshi_tag) else 1
@@ -83,9 +83,9 @@ func _setup_goods_display() -> void:
 	var label_goods_info = $VBoxContainer/Label_GoodsInfo
 	var btn_buy_goods = $VBoxContainer/Btn_BuyGoods
 
-	# 未所持グッズからランダム1つ選択
+	# アンロック済み・未所持グッズからランダム1つ選択
 	var owned_ids = Global.player_goods.map(func(g): return g.id)
-	var unowned = CardLoader.all_goods.filter(func(g): return g.id not in owned_ids)
+	var unowned = CardLoader.get_available_goods().filter(func(g): return g.id not in owned_ids)
 
 	if unowned.is_empty():
 		$VBoxContainer/HSeparator_Goods.visible = false

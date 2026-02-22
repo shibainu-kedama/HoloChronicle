@@ -1,21 +1,24 @@
-id,name,description,trigger,effect,value,tag
-miko_armband,35Pの腕章,戦闘終了時HP6回復,battle_end,heal,6,miko
-lui_emblem,holoXの紋章,ターン開始時ブロック3,turn_start,block,3,lui
-suisei_penlight,星のペンライト,戦闘開始時エナジー+1,battle_start,energy,1,suisei
-mascot,限定マスコット,推しタグカード使用時ブロック1,on_tagged_card,block,1,
-fan_uchiwa,応援うちわ,ターン開始時HP2回復,turn_start,heal,2,
-lucky_badge,幸運のバッジ,戦闘終了時ゴールド+15,battle_end,gold,15,
-power_charm,力のお守り,戦闘開始時 筋力+2,battle_start,strength,2,
-combo_ring,コンボリング,推しカード使用ごとに筋力+1,on_tagged_card,strength,1,
-iron_will,鉄の意志,戦闘開始時 ブロック+8,battle_start,block,8,
-guard_crystal,守護の水晶,推しカード使用ごとにブロック+2,on_tagged_card,block,2,
-scholar_pen,学者のペン,ターン開始時に1枚ドロー,turn_start,draw,1,
-infinite_deck,無限のデッキ,戦闘開始時に3枚ドロー,battle_start,draw,3,
-energy_crystal,エナジー水晶,ターン開始時 エナジー+1,turn_start,energy,1,
-venom_fang,毒牙,戦闘開始時 全敵に毒2付与,battle_start,poison_all,2,
-plague_ring,疫病の指輪,ターン開始時 全敵に毒1付与,turn_start,poison_all,1,
-recovery_talisman,回復のお守り,推しカード使用ごとにHP+3,on_tagged_card,heal,3,
-life_crystal,生命の水晶,戦闘開始時 HP+20,battle_start,heal,20,
-coin_purse,コインパース,戦闘終了時 ゴールド+20,battle_end,gold,20,
-lucky_clover,幸運のクローバー,ターン開始時 ゴールド+5,turn_start,gold,5,
-blessing_amulet,祝福のお守り,戦闘終了時 HP+12,battle_end,heal,12,
+id,name,description,trigger,effect,value,tag,unlock_key
+miko_armband,35Pの腕章,戦闘終了時HP6回復,battle_end,heal,6,miko,
+lui_emblem,holoXの紋章,ターン開始時ブロック3,turn_start,block,3,lui,
+suisei_penlight,星のペンライト,戦闘開始時エナジー+1,battle_start,energy,1,suisei,
+mascot,限定マスコット,推しタグカード使用時ブロック1,on_tagged_card,block,1,,
+fan_uchiwa,応援うちわ,ターン開始時HP2回復,turn_start,heal,2,,
+lucky_badge,幸運のバッジ,戦闘終了時ゴールド+15,battle_end,gold,15,,
+power_charm,力のお守り,戦闘開始時 筋力+2,battle_start,strength,2,,
+combo_ring,コンボリング,推しカード使用ごとに筋力+1,on_tagged_card,strength,1,,
+iron_will,鉄の意志,戦闘開始時 ブロック+8,battle_start,block,8,,
+guard_crystal,守護の水晶,推しカード使用ごとにブロック+2,on_tagged_card,block,2,,
+scholar_pen,学者のペン,ターン開始時に1枚ドロー,turn_start,draw,1,,
+infinite_deck,無限のデッキ,戦闘開始時に3枚ドロー,battle_start,draw,3,,
+energy_crystal,エナジー水晶,ターン開始時 エナジー+1,turn_start,energy,1,,
+venom_fang,毒牙,戦闘開始時 全敵に毒2付与,battle_start,poison_all,2,,
+plague_ring,疫病の指輪,ターン開始時 全敵に毒1付与,turn_start,poison_all,1,,
+recovery_talisman,回復のお守り,推しカード使用ごとにHP+3,on_tagged_card,heal,3,,
+life_crystal,生命の水晶,戦闘開始時 HP+20,battle_start,heal,20,,
+coin_purse,コインパース,戦闘終了時 ゴールド+20,battle_end,gold,20,,
+lucky_clover,幸運のクローバー,ターン開始時 ゴールド+5,turn_start,gold,5,,
+blessing_amulet,祝福のお守り,戦闘終了時 HP+12,battle_end,heal,12,,
+lui_talon,鷹の鉤爪,Luiカード使用ごとに筋力+2,on_tagged_card,strength,2,lui,lui_clear
+miko_purification,大祓の玉串,Mikoカード使用ごとにHP+4,on_tagged_card,heal,4,miko,miko_clear
+suisei_comet_core,彗星の核,Suiseiカード使用ごとに1枚ドロー,on_tagged_card,draw,1,suisei,suisei_clear
